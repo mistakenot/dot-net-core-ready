@@ -1,0 +1,115 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+
+<div class="jumbotron">
+    <h1>Dot Net Core Ready</h1>
+    <p class="lead"></p>
+    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <form data-bind="submit: search.submitSearch">
+            <div class="form-group">
+                <label for="searchTerm">Search for NuGet Package</label>
+                <input type="text" class="form-control" id="searchTerm" placeholder="Search..." data-bind="value: search.searchTerm">
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-12">
+        <form data-bind="submit: nuget.submit">
+            <div class="form-group">
+                <label for="searchTerm">Search for NuGet Package</label>
+                <input type="text" class="form-control" id="nugetId" placeholder="Id..." data-bind="value: nuget.id">
+            </div>
+            <div class="form-group">
+                <label for="searchTerm">Search for NuGet Package</label>
+                <input type="text" class="form-control" id="nugetVersion" placeholder="Version..." data-bind="value: nuget.version">
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div data-bind="visible: nuget.isLoading">
+            Loading...
+        </div>
+        <table data-bind="visible: !nuget.isLoading()" class="table">
+            <thead>
+            <tr><th>Framework</th><th>Version</th></tr>
+            </thead>
+            <tbody data-bind="foreach: nuget.frameworks">
+            <tr data-bind="css: {success: isNetCore}">
+                <td data-bind="text: framework"></td>
+                <td data-bind="text: version"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        function SearchModel(onSearch) {
+            var self = this;
+            var activeSearch = null;
+            var searchUrl = '@(Url.Action("Search", "Nuget"))';
+            this.isSearching = ko.observable(false);
+            this.searchTerm = ko.observable("");
+            this.submitSearch = function() {
+                if (activeSearch) {
+                    activeSearch.abort();
+                }
+                activeSearch = $.getJSON(
+                    searchUrl,
+                    { searchTerm: self.searchTerm() },
+                    (data) => onDone(data));
+            }
+        }
+
+        function NugetModel() {
+            var self = this;
+            this.isLoading = ko.observable(false);
+            this.version = ko.observable("");
+            this.id = ko.observable("");
+            this.frameworks = ko.observableArray([]);
+            this.activeSearch = null;
+            this.submit = function() {
+                var url = '@(Url.Action("Frameworks", "Nuget"))';
+                self.isLoading(true);
+                self.frameworks([]);
+                self.activeSearch = $.getJSON(
+                    url,
+                    { id: self.id(), version: self.version() },
+                    (data) => {
+                        self.cancel();
+                        var versions = data.map(d => new NugetVersionModel(d.FrameworkId, d.Version));
+                        self.frameworks(versions);
+                    });
+            }
+            this.cancel = function() {
+                if (self.activeSearch) {
+                    self.activeSearch.abort();
+                }
+                self.isLoading(false);
+            }
+        }
+
+        function NugetVersionModel(framework, version) {
+            this.framework = framework;
+            this.version = version;
+            this.isNetCore = framework === ".NETStandard";
+        }
+
+        function Model() {
+            this.search = new SearchModel(alert);
+            this.nuget = new NugetModel();
+        }
+
+        ko.applyBindings(new Model());
+    </script>
+}
