@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using DotNetCoreReady.Models;
 using NuGet.Frameworks;
 using NuGet.Protocol.Core.Types;
@@ -22,11 +23,30 @@ namespace DotNetCoreReady.Extensions
         {
             return new NugetFrameworkVersionModel
             {
-                FrameworkId = nugetFramework.DotNetFrameworkName.Split(',').First(),
-                Version = nugetFramework.DotNetFrameworkName.Split('=').ElementAt(1)
+                RuntimeId = nugetFramework.DotNetFrameworkName.Split(',').First(),
+                RuntimeVersionId = nugetFramework.DotNetFrameworkName.Split('=').ElementAt(1),
+                VersionId = nugetFramework.Version.ToString()
+            };
+        }
+
+        public static NugetPackageLookupResultModel ToLookupViewModel(this IPackageSearchMetadata package)
+        {
+            return new NugetPackageLookupResultModel
+            {
+                PackageVersion = package.Identity.Version.ToString(),
+                NetStandardVersions = package
+                    .DependencySets
+                    .OrderByDescending(d => d.TargetFramework.Version)
+                    .Select(d => d.TargetFramework.ToViewModel())
+                    .Where(v => v.RuntimeId == ".NETStandard")
+                    .Select(v => v.RuntimeVersionId)
             };
         }
     }
 
-    
+    public class NugetPackageLookupResultModel
+    {
+        public string PackageVersion { get; set; }
+        public IEnumerable<string> NetStandardVersions { get; set; }
+    }
 }

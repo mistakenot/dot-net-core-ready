@@ -19,7 +19,13 @@ namespace DotNetCoreReady.Controllers
         [HttpGet]
         public async Task<ActionResult> Search(string searchTerm)
         {
-            var response = new[] {new GithubIssueModel() {IsOpen = true, Title = "A title", Url = "github.com"}};
+            var response = new[]
+            {
+                new GithubIssueModel() {IsOpen = true, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
+                new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
+                new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"}
+            };
+
             return Json(response, JsonRequestBehavior.AllowGet);
 
             var request = new SearchRepositoriesRequest(searchTerm)

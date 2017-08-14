@@ -2,7 +2,8 @@
 {
     public class NugetFrameworkVersionModel
     {
-        public string FrameworkId { get; set; }
-        public string Version { get; set; }
+        public string RuntimeId { get; set; }
+        public string RuntimeVersionId { get; set; }
+        public string VersionId { get; set; }
     }
 }

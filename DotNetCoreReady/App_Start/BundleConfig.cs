@@ -28,14 +28,16 @@ namespace DotNetCoreReady
             // http://winstrap.azurewebsites.net
             bundles.Add(new StyleBundle("~/Content/css").Include(
                         //"~/Content/bootstrap.css",
-                        "~/Content/winstrap.min.css",
-                        "~/Content/winjs-symbols.ttf",
+                        "~/Content/winstrap.css",
                       "~/Content/site.css"));
-            
+
+            bundles.Add(new StyleBundle("~/Content/glyphs-winjs-symbols.ttf").Include(
+                "~/Content/winjs-symbols.ttf"));
+
             bundles.Add(new ScriptBundle("~/bundles/knockout").Include(
                     "~/Scripts/knockout-3.4.2.js"));
 
-            bundles.Add(new StyleBundle("~/fonts/glyphs/winjs-symbols.ttf").Include(
+            bundles.Add(new StyleBundle("~/Content/winjs-symbols.ttf").Include(
                 "~/Content/winjs-symbols.ttf"));
         }
     }

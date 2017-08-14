@@ -17,7 +17,7 @@ namespace DotNetCoreReady.Controllers
     public class NugetController : Controller
     {
         [HttpGet]
-        public async Task<JsonResult> Search(string searchTerm)
+        public async Task<JsonResult> Autocomplete(string searchTerm)
         {
             var searchResource = await GetResource<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(
@@ -32,24 +32,34 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> Frameworks(string id, string version)
+        public async Task<JsonResult> Search(string searchTerm)
         {
-            var packageId = new PackageIdentity(id, NuGetVersion.Parse(version));
+            var searchResource = await GetResource<PackageSearchResource>();
+            var searchMetadata = await searchResource.SearchAsync(
+                searchTerm,
+                new SearchFilter(true), 0, 5, null, CancellationToken.None);
+
+            var models = searchMetadata
+                .Select(s => s.ToViewModel())
+                .ToArray();
+
+            return Json(models, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> Frameworks(string id)
+        {
             var resource = await GetResource<PackageMetadataResource>();
-            var metadata = await resource.GetMetadataAsync(packageId, new NullLogger(), CancellationToken.None);
+            var metadata = await resource.GetMetadataAsync(id, true, false, new NullLogger(), CancellationToken.None);
             var versions = metadata
-                .DependencySets
-                .Select(d => d.TargetFramework.ToViewModel())
-                .Where(v => v.FrameworkId != ".NETPortable")
-                .OrderByDescending(v => v.FrameworkId)
-                .ThenByDescending(v => v.Version)
-                .ToList();
+                .OrderByDescending(p => p.Identity.Version)
+                .Select(p => p.ToLookupViewModel());
 
             return Json(versions, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
-        public async Task<JsonResult> Suggestions(string id, string version)
+        public async Task<JsonResult> Alternatives(string id, string version)
         {
             var packageId = new PackageIdentity(id, NuGetVersion.Parse(version));
             var resource = await GetResource<PackageMetadataResource>();

@@ -3,12 +3,14 @@
 }
 
 <div class="row">
-    <div class="col-sm-12">
+    <div class="col-sm-10 col-sm-offset-7">
         <form data-bind="submit: search.submitSearch"
               class="theme-on-color color-fill-accent-vivid-high p-xxs">
             <div class="form-group">
-                <span class="glyph glyph-clock"></span>
-                <label for="searchTerm">Search for NuGet Package</label>
+                <label for="searchTerm">
+                    <span class="glyph glyph-magnifier"></span>
+                    <span class="hidden-xs">Search for NuGet Package</span>
+                </label>
                 <span>
                     <input type="text" 
                            class="form-control" 
@@ -20,28 +22,22 @@
             </div>
         </form>
     </div>
-    <div class="col-sm-12">
-        <form data-bind="submit: nuget.submit"
-              class="theme-on-color color-fill-accent-vivid-high p-xxs">
-            <div class="form-group">
-                <label for="searchTerm">Search for NuGet Package</label>
-                <input type="text" class="form-control" id="nugetId" placeholder="Id..." data-bind="value: nuget.id">
-            </div>
-            <div class="form-group">
-                <label for="searchTerm">Search for NuGet Package</label>
-                <input type="text" class="form-control" id="nugetVersion" placeholder="Version..." data-bind="value: nuget.version">
-            </div>
-            <div class="btn-group">
-                <button type="submit" 
-                        class="btn btn-block btn-primary theme-dark no-outline">Submit</button>
-            </div>
-        </form>
+    <div class="col-sm-1">
+        <br />
+        <div data-bind="visible: search.isSearching"
+             class="progress-ring progress-large">
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+        </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-sm-12">
-        <div data-bind="visible: nuget.isLoading">
+    <div class="col-md-12">
+        <div data-bind="visible: nuget.isLoading" class="glyphicon-align-center">
             <div class="progress-ring progress-large">
                 <div class="progress-circle"></div>
                 <div class="progress-circle"></div>
@@ -50,23 +46,34 @@
                 <div class="progress-circle"></div>
             </div>
         </div>
-        <table data-bind="visible: !nuget.isLoading()" class="table">
+        <table data-bind="visible: nuget.isVisible()" class="table">
             <thead>
-            <tr><th>Framework</th><th>Version</th></tr>
+            <tr>
+                <th>Package Version</th>
+                <th>.NET Core Ready</th>
+                <th>Supports .NET Standard</th>
+            </tr>
             </thead>
             <tbody data-bind="foreach: nuget.frameworks">
-                <tr data-bind="css: {success: isNetCore}">
-                    <td>
-                        <span class="glyph glyph-checkmark" aria-hidden="true"></span>
-                        <span data-bind="text: framework"></span>
-                    </td>
-                    <td data-bind="text: version"></td>
-                </tr>
+            <tr data-bind="css: {success: supportsNetCore, danger: !supportsNetCore}">
+                <td>
+                    <span data-bind="text: packageVersion"></span>
+                </td>
+                <td>
+                    <span class="glyph glyph-checkmark" 
+                          data-bind="visible: supportsNetCore"
+                          aria-hidden="true"></span>
+                    <span class="glyph glyph-cancel"
+                          data-bind="visible: !supportsNetCore"
+                          aria-hidden="true"></span>
+                </td>
+                <td data-bind="text: netStandardVersions"></td>
+            </tr>
             </tbody>
         </table>
     </div>
-    <div class="col-sm-12">
-        <div data-bind="visible: github.isLoading">
+    <div class="col-md-12">
+        <div data-bind="visible: github.isLoading" class="glyphicon-align-center">
             <div class="progress-ring progress-large">
                 <div class="progress-circle"></div>
                 <div class="progress-circle"></div>
@@ -75,46 +82,42 @@
                 <div class="progress-circle"></div>
             </div>
         </div>
-        <div>
-            <ol class="list-items" data-bind="foreach: github.issues">
-                <li class="list-items-row">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <a data-bind="text: title"></a>
-                        </div>
-                        <div class="col-md-6">
-                            <p data-bind="text: summary"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <p class="color color-bg-light-vivid-mid">
-                                This is some comment.
-                            </p>
-                        </div>
-                    </div>
-                </li>
-            </ol>
-        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Github Issues</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: github.issues">
+                <tr>
+                    <td>
+                        <h6>
+                            <span class="type-sh2">
+                                <a data-bind="text: title, attr: {href: url}"></a>
+                            </span>
+                            <span class="label label-warning" data-bind="visible: isOpen">Open</span>
+                            <span class="label label-primary" data-bind="visible: !isOpen">Closed</span>
+                        </h6>
+                        <p data-bind="text: summary">
+
+                        </p>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
 @section scripts{
     <script>
-        function SearchModel(onResults) {
+        function SearchModel(onSubmit) {
             var self = this;
-            var activeSearch = null;
-            var searchUrl = '@(Url.Action("Search", "Nuget"))';
-            this.isSearching = ko.observable(false);
             this.searchTerm = ko.observable("");
+            this.isSearching = ko.observable(false);
             this.submitSearch = function() {
-                if (activeSearch) {
-                    activeSearch.abort();
-                }
-                activeSearch = $.getJSON(
-                    searchUrl,
-                    { searchTerm: self.searchTerm() },
-                    (data) => onResults(data));
+                onSubmit(self.searchTerm());
+                self.isSearching(false);
             }
         }
 
@@ -125,20 +128,22 @@
             this.id = ko.observable("");
             this.frameworks = ko.observableArray([]);
             this.activeSearch = null;
-            this.submit = function() {
+            this.isDirty = ko.observable(false);
+            this.load = function(id) {
                 var url = '@(Url.Action("Frameworks", "Nuget"))';
                 self.isLoading(true);
                 self.frameworks([]);
                 self.activeSearch = $.getJSON(
                     url,
-                    { id: self.id(), version: self.version() },
+                    { id },
                     (data) => {
                         self.cancel();
-                        var versions = data.map(d => new NugetVersionModel(d.FrameworkId, d.Version));
+                        var versions = data.map(d => new NugetVersionModel(d.PackageVersion, d.NetStandardVersions));
                         self.frameworks(versions);
                         if (onResults) {
                             onResults(versions);
                         }
+                        self.isVisible(true);
                     });
             }
             this.cancel = function() {
@@ -147,12 +152,15 @@
                 }
                 self.isLoading(false);
             }
+            this.isVisible = () => {
+                return !self.isDirty() && !self.isLoading();
+            }
         }
 
-        function NugetVersionModel(framework, version) {
-            this.framework = framework;
-            this.version = version;
-            this.isNetCore = framework === ".NETStandard";
+        function NugetVersionModel(version, netStandardVersions) {
+            this.packageVersion = version;
+            this.netStandardVersions = netStandardVersions.join(', ');
+            this.supportsNetCore = netStandardVersions.length > 0;
         }
 
         function GithubModel() {
@@ -162,14 +170,15 @@
             this.activeSearch = undefined;
             var url = '@Url.Action("Search", "Github")';
 
-            this.load = () => {
+            this.load = (packageId) => {
                 self.isLoading(true);
                 self.activeSearch = $.getJSON(
                     url,
-                    { searchTerm: "" },
+                    { searchTerm: packageId },
                     (data) => {
                         var models = data.map(d =>
-                            new GithubIssueModel(d.Title, "", d.Url, d.IsOpen, "A comment."));
+                            new GithubIssueModel(d.Title, d.Summary, d.Url, d.IsOpen));
+                        console.log(models);
                         self.issues(models);
                         self.cancel();
                     });
@@ -183,12 +192,11 @@
             }
         }
 
-        function GithubIssueModel(title, summary, repo, isOpen, comment) {
+        function GithubIssueModel(title, summary, repo, isOpen) {
             this.title = title;
             this.summary = summary;
-            this.repo = repo;
+            this.url = repo;
             this.isOpen = isOpen;
-            this.comment = comment;
         }
 
         function SuggestionsModel() {
@@ -196,7 +204,7 @@
             this.isLoading = ko.observable(false);
             this.suggestions = ko.observableArray([]);
             this.activeSearch = undefined;
-            var url = '@Url.Action("Suggestions", "Nuget")';
+            var url = '@Url.Action("Alternatives", "Nuget")';
 
             this.load = (id, version) => {
                 self.isLoading(true);
@@ -223,8 +231,11 @@
         }
 
         function Model() {
+            var self = this;
             this.search = new SearchModel(s => {
-
+                self.nuget.load(s);
+                self.github.load(s);
+                self.suggestions.load(s);
             });
             this.nuget = new NugetModel();
             this.github = new GithubModel();
@@ -242,10 +253,15 @@
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
             remote: {
-                url: '@Url.Action("Search", "Nuget")',
+                url: '@Url.Action("Autocomplete", "Nuget")',
                 prepare: (query, settings) => {
+                    model.search.isSearching(true);
                     settings.data = { searchTerm: query }
                     return settings;
+                },
+                transform: (response) => {
+                    model.search.isSearching(false);
+                    return response;
                 }
             }
         });
