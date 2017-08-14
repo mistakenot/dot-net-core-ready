@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using DotNetCoreReady.Extensions;
+using DotNetCoreReady.Models;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -53,7 +54,8 @@ namespace DotNetCoreReady.Controllers
             var metadata = await resource.GetMetadataAsync(id, true, false, new NullLogger(), CancellationToken.None);
             var versions = metadata
                 .OrderByDescending(p => p.Identity.Version)
-                .Select(p => p.ToLookupViewModel());
+                .Select(p => p.ToLookupViewModel())
+                .Take(8);
 
             return Json(versions, JsonRequestBehavior.AllowGet);
         }
@@ -61,6 +63,24 @@ namespace DotNetCoreReady.Controllers
         [HttpGet]
         public async Task<JsonResult> Alternatives(string id, string version)
         {
+            var result = new[]
+            {
+                new NugetPackageModel
+                {
+                    Id = "Thing.Thing",
+                    ProjectUrl = "http://thing.com",
+                    Version = "1.2.3"
+                },
+                new NugetPackageModel
+                {
+                    Id = "Thing.Thing",
+                    ProjectUrl = "http://thing.com",
+                    Version = "1.2.3"
+                }
+            };
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+
             var packageId = new PackageIdentity(id, NuGetVersion.Parse(version));
             var resource = await GetResource<PackageMetadataResource>();
             var metadata = await resource.GetMetadataAsync(packageId, new NullLogger(), CancellationToken.None);

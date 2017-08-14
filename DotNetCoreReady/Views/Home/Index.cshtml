@@ -2,93 +2,133 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="row">
-    <div class="col-sm-10 col-sm-offset-7">
-        <form data-bind="submit: search.submitSearch"
-              class="theme-on-color color-fill-accent-vivid-high p-xxs">
-            <div class="form-group">
-                <label for="searchTerm">
-                    <span class="glyph glyph-magnifier"></span>
-                    <span class="hidden-xs">Search for NuGet Package</span>
-                </label>
-                <span>
-                    <input type="text" 
-                           class="form-control" 
-                           id="searchTerm" 
-                           placeholder="Search..." 
-                           autocomplete="off"
-                           data-bind="value: search.searchTerm">
-                </span>
+<section>
+    <div class="row">
+        <div class="col-sm-10 col-sm-offset-7">
+            <form data-bind="submit: search.submitSearch"
+                  class="theme-on-color color-fill-accent-vivid-high p-xxs">
+                <div class="form-group">
+                    <label for="searchTerm">
+                        <span class="glyph glyph-magnifier"></span>
+                        <span class="hidden-xs">Search for Package</span>
+                    </label>
+                    <span>
+                        <input type="text"
+                               class="form-control"
+                               id="searchTerm"
+                               placeholder="Search..."
+                               autocomplete="off"
+                               data-bind="value: search.searchTerm">
+                    </span>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-1">
+            <br />
+            <div data-bind="visible: search.isSearching"
+                 class="progress-ring progress-large">
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
             </div>
-        </form>
-    </div>
-    <div class="col-sm-1">
-        <br />
-        <div data-bind="visible: search.isSearching"
-             class="progress-ring progress-large">
-            <div class="progress-circle"></div>
-            <div class="progress-circle"></div>
-            <div class="progress-circle"></div>
-            <div class="progress-circle"></div>
-            <div class="progress-circle"></div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="row">
-    <div class="col-md-12">
-        <div data-bind="visible: nuget.isLoading" class="glyphicon-align-center">
-            <div class="progress-ring progress-large">
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
+<section data-bind="visible: !search.isEmpty()">
+    
+    <div class="row">
+        <div class="col-md-12">
+            <h4>Status</h4>
+            <div data-bind="visible: nuget.isLoading" class="glyphicon-align-center">
+                <div class="progress-ring progress-large">
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                </div>
             </div>
+            <table data-bind="visible: nuget.isVisible()" class="table">
+                <thead>
+                <tr>
+                    <th>Package Version</th>
+                    <th>.NET Core Ready</th>
+                    <th>.NET Standard Versions</th>
+                </tr>
+                </thead>
+                <tbody data-bind="foreach: nuget.frameworks">
+                <tr data-bind="css: {success: supportsNetCore, danger: !supportsNetCore}">
+                    <td>
+                        <span data-bind="text: packageVersion"></span>
+                    </td>
+                    <td>
+                        <span class="glyph glyph-checkmark"
+                              data-bind="visible: supportsNetCore"
+                              aria-hidden="true"></span>
+                        <span class="glyph glyph-cancel"
+                              data-bind="visible: !supportsNetCore"
+                              aria-hidden="true"></span>
+                    </td>
+                    <td data-bind="text: netStandardVersions"></td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-        <table data-bind="visible: nuget.isVisible()" class="table">
-            <thead>
-            <tr>
-                <th>Package Version</th>
-                <th>.NET Core Ready</th>
-                <th>Supports .NET Standard</th>
-            </tr>
-            </thead>
-            <tbody data-bind="foreach: nuget.frameworks">
-            <tr data-bind="css: {success: supportsNetCore, danger: !supportsNetCore}">
-                <td>
-                    <span data-bind="text: packageVersion"></span>
-                </td>
-                <td>
-                    <span class="glyph glyph-checkmark" 
-                          data-bind="visible: supportsNetCore"
-                          aria-hidden="true"></span>
-                    <span class="glyph glyph-cancel"
-                          data-bind="visible: !supportsNetCore"
-                          aria-hidden="true"></span>
-                </td>
-                <td data-bind="text: netStandardVersions"></td>
-            </tr>
-            </tbody>
-        </table>
+
+        <div class="col-md-12">
+            <h4>Alternatives</h4>
+            <div data-bind="visible: suggestions.isLoading" class="glyphicon-align-center">
+                <div class="progress-ring progress-large">
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                </div>
+            </div>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Package Name</th>
+                    <th class="text-right">.NET Standard Versions</th>
+                </tr>
+                </thead>
+                <tbody data-bind="foreach: suggestions.suggestions">
+                <tr>
+                    <td>
+                        <a data-bind="text: id, attr: {href: url}"></a>
+                    </td>
+                    <td class="text-right">
+                        thign
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="col-md-12">
-        <div data-bind="visible: github.isLoading" class="glyphicon-align-center">
-            <div class="progress-ring progress-large">
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
+
+    <div class="row">
+        <div class="col-xs-24">
+            <h4>Github Issues</h4>
+            <div data-bind="visible: github.isLoading" class="glyphicon-align-center">
+                <div class="progress-ring progress-large">
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                    <div class="progress-circle"></div>
+                </div>
             </div>
-        </div>
-        <table class="table table-striped">
-            <thead>
+            <table class="table table-striped">
+                <thead>
                 <tr>
                     <th>Github Issues</th>
                 </tr>
-            </thead>
-            <tbody data-bind="foreach: github.issues">
+                </thead>
+                <tbody data-bind="foreach: github.issues">
                 <tr>
                     <td>
                         <h6>
@@ -104,10 +144,27 @@
 
                     </td>
                 </tr>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+
+</section>
+
+<section data-bind="visible: search.isEmpty()">
+    <br/>
+    <div class="row text-center">
+        <div class="col-md-8">
+            <p class="type-p1">Search for package status.</p>
+        </div>
+        <div class="col-md-8">
+            <p class="type-p1">See compatible alternatives.</p>
+        </div>
+        <div class="col-md-8">
+            <p class="type-p1">Find relative Github issues.</p>
+        </div>
+    </div>
+</section>
 
 @section scripts{
     <script>
@@ -119,6 +176,9 @@
                 onSubmit(self.searchTerm());
                 self.isSearching(false);
             }
+            this.isEmpty = ko.computed(() => {
+                return self.searchTerm() === "";
+            });
         }
 
         function NugetModel(onResults) {
@@ -138,7 +198,8 @@
                     { id },
                     (data) => {
                         self.cancel();
-                        var versions = data.map(d => new NugetVersionModel(d.PackageVersion, d.NetStandardVersions));
+                        var versions = data
+                            .map(d => new NugetVersionModel(d.PackageVersion, d.NetStandardVersions));
                         self.frameworks(versions);
                         if (onResults) {
                             onResults(versions);
@@ -178,7 +239,6 @@
                     (data) => {
                         var models = data.map(d =>
                             new GithubIssueModel(d.Title, d.Summary, d.Url, d.IsOpen));
-                        console.log(models);
                         self.issues(models);
                         self.cancel();
                     });
@@ -212,8 +272,9 @@
                     url,
                     { id, version },
                     (data) => {
-                        var models = data.map(d => new SuggestionModel(d.id, d.package));
+                        var models = data.map(d => new SuggestionModel(d.Id, d.Name, d.Version, d.ProjectUrl));
                         self.suggestions(models);
+                        this.cancel();
                     });
             }
 
@@ -225,9 +286,11 @@
             }
         }
 
-        function SuggestionModel(id, version) {
+        function SuggestionModel(id, name, version, url) {
             this.id = id;
+            this.name = name;
             this.version = version;
+            this.url = url;
         }
 
         function Model() {
@@ -245,8 +308,6 @@
         var model = new Model();
 
         ko.applyBindings(model);
-
-        model.github.load();
 
         // instantiate the bloodhound suggestion engine
         var numbers = new Bloodhound({
