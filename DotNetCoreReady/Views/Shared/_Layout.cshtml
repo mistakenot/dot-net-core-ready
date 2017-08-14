@@ -19,29 +19,43 @@
         appInsights.trackPageView();
     </script>
 </head>
-<body>
-    <div class="jumbotron theme-dark">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-24 text-center">
-                    <h3>Dot Net Core Ready</h3>
-                    <div class="type-sh3">
-                        Dot Net Core Ready?
-                    </div>
-                    <div class="col-md-12 col-md-offset-6">
-                        <div class="type-p3">You can create any Hero configuration with the combination of default settings and standard text/spacer classes. Take a look at the marukup to see it in action.</div>
-                    </div>
+<body> 
+    <nav class="navbar navbar-default">
+        <div class="navbar-global theme-default">
+            <div class="container">
+                <div class="navbar-header">
+                    <a href="http://www.microsoft.com" class="navbar-brand">
+                        <img src="https://assets.onestore.ms/cdnfiles/onestorerolling-1511-11008/shell/v3/images/logo/microsoft.png" alt="Microsoft" height="23" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>   
+
+<div class="jumbotron theme-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-24 text-center">
+                <h1>.NET Core Ready</h1>
+                <div class="type-sh3">
+                    Check whether your favourite Nuget packages are ready for .NET Core.
                 </div>
             </div>
         </div>
     </div>
-    <div class="container body-content">
+</div>
+    
+<br/>
+
+<div class="container body-content">
         @RenderBody()
-        <hr/>
-        <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
-    </div>
+    <hr/>
+    <footer>
+        <p>
+            Created by <a href="http://www.charliedaly.co.uk/">Charlie Daly</a> on <a href="http://github.com/mistakenot">Github</a>.
+        </p>
+    </footer>
+</div>
 
 @Scripts.Render("~/bundles/jquery")
 @Scripts.Render("~/bundles/bootstrap")

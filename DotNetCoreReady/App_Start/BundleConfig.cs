@@ -21,16 +21,22 @@ namespace DotNetCoreReady
 
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.js",
-                      "~/Scripts/respond.js"));
+                      "~/Scripts/respond.js",
+                      "~/Scripts/bootstrap3-typeahead.js",
+                      "~/Scripts/bloodhound.js"));
 
             // http://winstrap.azurewebsites.net
             bundles.Add(new StyleBundle("~/Content/css").Include(
                         //"~/Content/bootstrap.css",
                         "~/Content/winstrap.min.css",
+                        "~/Content/winjs-symbols.ttf",
                       "~/Content/site.css"));
             
             bundles.Add(new ScriptBundle("~/bundles/knockout").Include(
                     "~/Scripts/knockout-3.4.2.js"));
+
+            bundles.Add(new StyleBundle("~/fonts/glyphs/winjs-symbols.ttf").Include(
+                "~/Content/winjs-symbols.ttf"));
         }
     }
 }

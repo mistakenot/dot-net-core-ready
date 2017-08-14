@@ -2,24 +2,27 @@
     ViewBag.Title = "Home Page";
 }
 
-
-<div class="jumbotron">
-    <h1>Dot Net Core Ready</h1>
-    <p class="lead"></p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
-
 <div class="row">
     <div class="col-sm-12">
-        <form data-bind="submit: search.submitSearch">
+        <form data-bind="submit: search.submitSearch"
+              class="theme-on-color color-fill-accent-vivid-high p-xxs">
             <div class="form-group">
+                <span class="glyph glyph-clock"></span>
                 <label for="searchTerm">Search for NuGet Package</label>
-                <input type="text" class="form-control" id="searchTerm" placeholder="Search..." data-bind="value: search.searchTerm">
+                <span>
+                    <input type="text" 
+                           class="form-control" 
+                           id="searchTerm" 
+                           placeholder="Search..." 
+                           autocomplete="off"
+                           data-bind="value: search.searchTerm">
+                </span>
             </div>
         </form>
     </div>
     <div class="col-sm-12">
-        <form data-bind="submit: nuget.submit">
+        <form data-bind="submit: nuget.submit"
+              class="theme-on-color color-fill-accent-vivid-high p-xxs">
             <div class="form-group">
                 <label for="searchTerm">Search for NuGet Package</label>
                 <input type="text" class="form-control" id="nugetId" placeholder="Id..." data-bind="value: nuget.id">
@@ -28,7 +31,10 @@
                 <label for="searchTerm">Search for NuGet Package</label>
                 <input type="text" class="form-control" id="nugetVersion" placeholder="Version..." data-bind="value: nuget.version">
             </div>
-            <button type="submit">Submit</button>
+            <div class="btn-group">
+                <button type="submit" 
+                        class="btn btn-block btn-primary theme-dark no-outline">Submit</button>
+            </div>
         </form>
     </div>
 </div>
@@ -36,25 +42,66 @@
 <div class="row">
     <div class="col-sm-12">
         <div data-bind="visible: nuget.isLoading">
-            Loading...
+            <div class="progress-ring progress-large">
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+            </div>
         </div>
         <table data-bind="visible: !nuget.isLoading()" class="table">
             <thead>
             <tr><th>Framework</th><th>Version</th></tr>
             </thead>
             <tbody data-bind="foreach: nuget.frameworks">
-            <tr data-bind="css: {success: isNetCore}">
-                <td data-bind="text: framework"></td>
-                <td data-bind="text: version"></td>
-            </tr>
+                <tr data-bind="css: {success: isNetCore}">
+                    <td>
+                        <span class="glyph glyph-checkmark" aria-hidden="true"></span>
+                        <span data-bind="text: framework"></span>
+                    </td>
+                    <td data-bind="text: version"></td>
+                </tr>
             </tbody>
         </table>
+    </div>
+    <div class="col-sm-12">
+        <div data-bind="visible: github.isLoading">
+            <div class="progress-ring progress-large">
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+                <div class="progress-circle"></div>
+            </div>
+        </div>
+        <div>
+            <ol class="list-items" data-bind="foreach: github.issues">
+                <li class="list-items-row">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a data-bind="text: title"></a>
+                        </div>
+                        <div class="col-md-6">
+                            <p data-bind="text: summary"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p class="color color-bg-light-vivid-mid">
+                                This is some comment.
+                            </p>
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
     </div>
 </div>
 
 @section scripts{
     <script>
-        function SearchModel(onSearch) {
+        function SearchModel(onResults) {
             var self = this;
             var activeSearch = null;
             var searchUrl = '@(Url.Action("Search", "Nuget"))';
@@ -67,11 +114,11 @@
                 activeSearch = $.getJSON(
                     searchUrl,
                     { searchTerm: self.searchTerm() },
-                    (data) => onDone(data));
+                    (data) => onResults(data));
             }
         }
 
-        function NugetModel() {
+        function NugetModel(onResults) {
             var self = this;
             this.isLoading = ko.observable(false);
             this.version = ko.observable("");
@@ -89,6 +136,9 @@
                         self.cancel();
                         var versions = data.map(d => new NugetVersionModel(d.FrameworkId, d.Version));
                         self.frameworks(versions);
+                        if (onResults) {
+                            onResults(versions);
+                        }
                     });
             }
             this.cancel = function() {
@@ -105,11 +155,111 @@
             this.isNetCore = framework === ".NETStandard";
         }
 
-        function Model() {
-            this.search = new SearchModel(alert);
-            this.nuget = new NugetModel();
+        function GithubModel() {
+            var self = this;
+            this.isLoading = ko.observable(false);
+            this.issues = ko.observableArray([]);
+            this.activeSearch = undefined;
+            var url = '@Url.Action("Search", "Github")';
+
+            this.load = () => {
+                self.isLoading(true);
+                self.activeSearch = $.getJSON(
+                    url,
+                    { searchTerm: "" },
+                    (data) => {
+                        var models = data.map(d =>
+                            new GithubIssueModel(d.Title, "", d.Url, d.IsOpen, "A comment."));
+                        self.issues(models);
+                        self.cancel();
+                    });
+            }
+
+            this.cancel = () => {
+                if (self.activeSearch) {
+                    self.activeSearch.abort();
+                }
+                self.isLoading(false);
+            }
         }
 
-        ko.applyBindings(new Model());
+        function GithubIssueModel(title, summary, repo, isOpen, comment) {
+            this.title = title;
+            this.summary = summary;
+            this.repo = repo;
+            this.isOpen = isOpen;
+            this.comment = comment;
+        }
+
+        function SuggestionsModel() {
+            var self = this;
+            this.isLoading = ko.observable(false);
+            this.suggestions = ko.observableArray([]);
+            this.activeSearch = undefined;
+            var url = '@Url.Action("Suggestions", "Nuget")';
+
+            this.load = (id, version) => {
+                self.isLoading(true);
+                self.activeSearch = $.getJSON(
+                    url,
+                    { id, version },
+                    (data) => {
+                        var models = data.map(d => new SuggestionModel(d.id, d.package));
+                        self.suggestions(models);
+                    });
+            }
+
+            this.cancel = () => {
+                if (self.activeSearch) {
+                    self.activeSearch.abort();
+                }
+                self.isLoading(false);
+            }
+        }
+
+        function SuggestionModel(id, version) {
+            this.id = id;
+            this.version = version;
+        }
+
+        function Model() {
+            this.search = new SearchModel(s => {
+
+            });
+            this.nuget = new NugetModel();
+            this.github = new GithubModel();
+            this.suggestions = new SuggestionsModel();
+        }
+
+        var model = new Model();
+
+        ko.applyBindings(model);
+
+        model.github.load();
+
+        // instantiate the bloodhound suggestion engine
+        var numbers = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.whitespace,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: '@Url.Action("Search", "Nuget")',
+                prepare: (query, settings) => {
+                    settings.data = { searchTerm: query }
+                    return settings;
+                }
+            }
+        });
+
+        // initialize the bloodhound suggestion engine
+        numbers.initialize();
+
+        $('#searchTerm').typeahead({
+            items: 4,
+            source: numbers.ttAdapter(),
+            afterSelect: (item) => {
+                model.search.submitSearch();
+            }
+        });
+
     </script>
 }

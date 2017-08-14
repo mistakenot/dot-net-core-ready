@@ -249,6 +249,8 @@
     <Compile Include="Controllers\GithubController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\NugetController.cs" />
+    <Compile Include="Extensions\GithubExtensions.cs" />
+    <Compile Include="Extensions\GithubIssueModel.cs" />
     <Compile Include="Extensions\PackageExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -262,6 +264,8 @@
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Scripts\bloodhound.js" />
+    <Content Include="Scripts\bootstrap3-typeahead.js" />
     <Content Include="Content\winstrap.min.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />

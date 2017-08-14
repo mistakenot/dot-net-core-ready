@@ -25,7 +25,7 @@ namespace DotNetCoreReady.Controllers
                 new SearchFilter(true), 0, 5, null, CancellationToken.None);
 
             var models = searchMetadata
-                .Select(s => s.ToViewModel())
+                .Select(s => s.Identity.Id)
                 .ToArray();
 
             return Json(models, JsonRequestBehavior.AllowGet);
@@ -46,6 +46,20 @@ namespace DotNetCoreReady.Controllers
                 .ToList();
 
             return Json(versions, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> Suggestions(string id, string version)
+        {
+            var packageId = new PackageIdentity(id, NuGetVersion.Parse(version));
+            var resource = await GetResource<PackageMetadataResource>();
+            var metadata = await resource.GetMetadataAsync(packageId, new NullLogger(), CancellationToken.None);
+            var tags = metadata.Tags;
+            var searchResource = await GetResource<PackageSearchResource>();
+            var searchRequest = await searchResource.SearchAsync("", new SearchFilter(true), 0, 5, new NullLogger(), CancellationToken.None);
+            var response = searchRequest.Select(s => s.ToViewModel());
+
+            return Json(response);
         }
 
         private static Task<T> GetResource<T>()
