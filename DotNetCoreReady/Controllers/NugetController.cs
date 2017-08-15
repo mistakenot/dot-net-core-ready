@@ -41,7 +41,7 @@ namespace DotNetCoreReady.Controllers
                 new SearchFilter(true), 0, 5, null, CancellationToken.None);
 
             var models = searchMetadata
-                .Select(s => s.ToViewModel())
+                .Select(s => s.ToLookupViewModel())
                 .ToArray();
 
             return Json(models, JsonRequestBehavior.AllowGet);
@@ -50,46 +50,41 @@ namespace DotNetCoreReady.Controllers
         [HttpGet]
         public async Task<JsonResult> Frameworks(string id)
         {
-            var resource = await GetResource<PackageMetadataResource>();
-            var metadata = await resource.GetMetadataAsync(id, true, false, new NullLogger(), CancellationToken.None);
-            var versions = metadata
-                .OrderByDescending(p => p.Identity.Version)
-                .Select(p => p.ToLookupViewModel())
-                .Take(8);
-
-            return Json(versions, JsonRequestBehavior.AllowGet);
+            var versions = await FindLatestVersions(id);
+            var models = versions.Select(v => v.ToLookupViewModel());
+            return Json(models, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
-        public async Task<JsonResult> Alternatives(string id, string version)
+        public async Task<JsonResult> Alternatives(string id)
         {
-            var result = new[]
-            {
-                new NugetPackageModel
-                {
-                    Id = "Thing.Thing",
-                    ProjectUrl = "http://thing.com",
-                    Version = "1.2.3"
-                },
-                new NugetPackageModel
-                {
-                    Id = "Thing.Thing",
-                    ProjectUrl = "http://thing.com",
-                    Version = "1.2.3"
-                }
-            };
+            //var result = new[]
+            //{
+            //    new NugetPackageModel
+            //    {
+            //        Id = "Thing.Thing",
+            //        ProjectUrl = "http://thing.com",
+            //        Version = "1.2.3"
+            //    },
+            //    new NugetPackageModel
+            //    {
+            //        Id = "Thing.Thing",
+            //        ProjectUrl = "http://thing.com",
+            //        Version = "1.2.3"
+            //    }
+            //};
 
-            return Json(result, JsonRequestBehavior.AllowGet);
+            //return Json(result, JsonRequestBehavior.AllowGet);
 
-            var packageId = new PackageIdentity(id, NuGetVersion.Parse(version));
-            var resource = await GetResource<PackageMetadataResource>();
-            var metadata = await resource.GetMetadataAsync(packageId, new NullLogger(), CancellationToken.None);
-            var tags = metadata.Tags;
+            var latestVersions = await FindLatestVersions(id, 1);
+            var tags = latestVersions.Select(v => v.Tags).First();
             var searchResource = await GetResource<PackageSearchResource>();
-            var searchRequest = await searchResource.SearchAsync("", new SearchFilter(true), 0, 5, new NullLogger(), CancellationToken.None);
-            var response = searchRequest.Select(s => s.ToViewModel());
+            var searchRequest = await searchResource.SearchAsync(tags, new SearchFilter(true), 0, 5, new NullLogger(), CancellationToken.None);
+            var response = searchRequest
+                .Select(s => s.ToViewModel())
+                .ToList();
 
-            return Json(response);
+            return Json(response, JsonRequestBehavior.AllowGet);
         }
 
         private static Task<T> GetResource<T>()
@@ -100,6 +95,17 @@ namespace DotNetCoreReady.Controllers
             var packageSource = new PackageSource("https://api.nuget.org/v3/index.json");
             var sourceRepository = new SourceRepository(packageSource, providers);
             return sourceRepository.GetResourceAsync<T>();
+        }
+
+        private static async Task<IEnumerable<IPackageSearchMetadata>> FindLatestVersions(string id, int count = 8)
+        {
+            var resource = await GetResource<PackageMetadataResource>();
+            var metadata = await resource.GetMetadataAsync(id, true, false, new NullLogger(), CancellationToken.None);
+            var versions = metadata
+                .OrderByDescending(p => p.Identity.Version)
+                .Take(count);
+
+            return versions;
         }
     }
 }

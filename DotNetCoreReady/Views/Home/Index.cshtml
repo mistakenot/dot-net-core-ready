@@ -96,13 +96,13 @@
                     <th class="text-right">.NET Standard Versions</th>
                 </tr>
                 </thead>
-                <tbody data-bind="foreach: alternatives.suggestions">
+                <tbody data-bind="foreach: alternatives.items">
                 <tr>
                     <td>
-                        <a _data_bind="text: Id, attr: {href: url}"></a>
+                        <a data-bind="text: Id, attr: {href: ProjectUrl}"></a>
                     </td>
                     <td class="text-right">
-                        thign
+                        <p data-bind="text: Version"></p>
                     </td>
                 </tr>
                 </tbody>
