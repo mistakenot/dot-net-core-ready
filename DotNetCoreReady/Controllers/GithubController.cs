@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using DotNetCoreReady.Extensions;
@@ -17,37 +19,71 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Search(string searchTerm)
+        public async Task<ActionResult> Search(string searchTerm, string url = null)
         {
-            var response = new[]
+            Repository repoFoundByUrl = null;
+
+            if (!string.IsNullOrEmpty(url))
             {
-                new GithubIssueModel() {IsOpen = true, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
-                new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
-                new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"}
-            };
+                var uri = new Uri(url);
 
-            return Json(response, JsonRequestBehavior.AllowGet);
-
-            var request = new SearchRepositoriesRequest(searchTerm)
-            {
-                Language = Language.CSharp
-            };
-
-            var result = await _client.Search.SearchRepo(request);
-            var repos = new RepositoryCollection();
-
-            foreach (var repo in result.Items)
-            {
-                repos.Add(repo.Owner.Name, repo.Name);
+                if (uri.Segments.Length == 2)
+                {
+                    repoFoundByUrl = await _client.Repository.Get(uri.Segments[0], uri.Segments[1]);
+                }
             }
 
-            var searchIssuesRequest = new SearchIssuesRequest
+            SearchIssuesRequest searchIssuesRequest = null;
+
+            if (repoFoundByUrl != null)
             {
-                Repos = repos,
-            };
+                var repoCollection = new RepositoryCollection();
+                repoCollection.Add(repoFoundByUrl.Owner.Name, repoFoundByUrl.Name);
+
+                searchIssuesRequest = new SearchIssuesRequest(".NET Core Standard")
+                {
+                    Repos = repoCollection,
+                    Type = IssueTypeQualifier.Issue,
+                    Language = Language.CSharp,
+                    In = new List<IssueInQualifier> { IssueInQualifier.Title }
+                };
+            }
+            else
+            {
+                var findRepoRequest = new SearchRepositoriesRequest(searchTerm)
+                {
+                    SortField = RepoSearchSort.Stars,
+                    In = new[] {InQualifier.Name},
+                    Language = Language.CSharp
+                };
+
+                var findRepoResponse = await _client.Search.SearchRepo(findRepoRequest);
+                var repoCollection = new RepositoryCollection();
+
+                foreach (var repoResponse in findRepoResponse.Items.Take(1))
+                {
+                    repoCollection.Add(repoResponse.Owner.Login, repoResponse.Name);
+                }
+
+                searchIssuesRequest = new SearchIssuesRequest(".NET Core Standard")
+                {
+                    Repos = repoCollection,
+                    Type = IssueTypeQualifier.Issue,
+                    Language = Language.CSharp
+                };
+            }
+
+            //var response = new[]
+            //{
+            //    new GithubIssueModel() {IsOpen = true, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
+            //    new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
+            //    new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"}
+            //};
+
+            //return Json(response, JsonRequestBehavior.AllowGet);
 
             var issuesSearchResult = await _client.Search.SearchIssues(searchIssuesRequest);
-            //var response = issuesSearchResult.Items.Select(r => r.ToViewModel());
+            var response = issuesSearchResult.Items.Select(r => r.ToViewModel());
 
             return Json(response, JsonRequestBehavior.AllowGet);
         }

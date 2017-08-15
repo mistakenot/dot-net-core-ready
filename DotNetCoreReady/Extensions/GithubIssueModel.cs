@@ -1,4 +1,6 @@
-﻿namespace DotNetCoreReady.Extensions
+﻿using System;
+
+namespace DotNetCoreReady.Extensions
 {
     public class GithubIssueModel
     {
@@ -6,5 +8,7 @@
         public string Url { get; set; }
         public bool IsOpen { get; set; }
         public string Summary { get; set; }
+        public string Body { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

@@ -9,8 +9,10 @@ namespace DotNetCoreReady.Extensions
             return new GithubIssueModel
             {
                 Title = issue.Title,
-                Url = issue.Url.ToString(),
-                IsOpen = issue.State == ItemState.Open
+                Url = issue.HtmlUrl.ToString(),
+                IsOpen = issue.State == ItemState.Open,
+                Body = issue.Body.Substring(0, 300),
+                CreatedAt = issue.CreatedAt.DateTime
             };
         }
     }

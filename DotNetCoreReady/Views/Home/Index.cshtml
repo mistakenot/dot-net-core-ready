@@ -80,7 +80,7 @@
 
         <div class="col-md-12">
             <h4>Alternatives</h4>
-            <div data-bind="visible: suggestions.isLoading" class="glyphicon-align-center">
+            <div data-bind="visible: alternatives.isLoading" class="glyphicon-align-center">
                 <div class="progress-ring progress-large">
                     <div class="progress-circle"></div>
                     <div class="progress-circle"></div>
@@ -96,10 +96,10 @@
                     <th class="text-right">.NET Standard Versions</th>
                 </tr>
                 </thead>
-                <tbody data-bind="foreach: suggestions.suggestions">
+                <tbody data-bind="foreach: alternatives.suggestions">
                 <tr>
                     <td>
-                        <a data-bind="text: id, attr: {href: url}"></a>
+                        <a _data_bind="text: Id, attr: {href: url}"></a>
                     </td>
                     <td class="text-right">
                         thign
@@ -133,13 +133,13 @@
                     <td>
                         <h6>
                             <span class="type-sh2">
-                                <a data-bind="text: title, attr: {href: url}"></a>
+                                <a data-bind="text: Title, attr: {href: Url}"></a>
                             </span>
-                            <span class="label label-warning" data-bind="visible: isOpen">Open</span>
-                            <span class="label label-primary" data-bind="visible: !isOpen">Closed</span>
+                            <span class="label label-warning" data-bind="visible: IsOpen">Open</span>
+                            <span class="label label-primary" data-bind="visible: !IsOpen">Closed</span>
                         </h6>
-                        <p data-bind="text: summary">
-
+                        <p data-bind="text: Body">
+                            This is a test
                         </p>
 
                     </td>
@@ -233,13 +233,12 @@
 
             this.load = (packageId) => {
                 self.isLoading(true);
+                self.issues([]);
                 self.activeSearch = $.getJSON(
                     url,
-                    { searchTerm: packageId },
+                    { searchTerm: "Newtonsoft.Json", url: undefined },
                     (data) => {
-                        var models = data.map(d =>
-                            new GithubIssueModel(d.Title, d.Summary, d.Url, d.IsOpen));
-                        self.issues(models);
+                        self.issues(data);
                         self.cancel();
                     });
             }
@@ -252,17 +251,10 @@
             }
         }
 
-        function GithubIssueModel(title, summary, repo, isOpen) {
-            this.title = title;
-            this.summary = summary;
-            this.url = repo;
-            this.isOpen = isOpen;
-        }
-
-        function SuggestionsModel() {
+        function AlternativesModel() {
             var self = this;
             this.isLoading = ko.observable(false);
-            this.suggestions = ko.observableArray([]);
+            this.items = ko.observableArray([]);
             this.activeSearch = undefined;
             var url = '@Url.Action("Alternatives", "Nuget")';
 
@@ -272,8 +264,7 @@
                     url,
                     { id, version },
                     (data) => {
-                        var models = data.map(d => new SuggestionModel(d.Id, d.Name, d.Version, d.ProjectUrl));
-                        self.suggestions(models);
+                        self.items(data);
                         this.cancel();
                     });
             }
@@ -286,23 +277,16 @@
             }
         }
 
-        function SuggestionModel(id, name, version, url) {
-            this.id = id;
-            this.name = name;
-            this.version = version;
-            this.url = url;
-        }
-
         function Model() {
             var self = this;
             this.search = new SearchModel(s => {
                 self.nuget.load(s);
                 self.github.load(s);
-                self.suggestions.load(s);
+                self.alternatives.load(s);
             });
             this.nuget = new NugetModel();
             this.github = new GithubModel();
-            this.suggestions = new SuggestionsModel();
+            this.alternatives = new AlternativesModel();
         }
 
         var model = new Model();
