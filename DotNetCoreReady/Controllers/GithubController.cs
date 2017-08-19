@@ -69,7 +69,8 @@ namespace DotNetCoreReady.Controllers
                 {
                     Repos = repoCollection,
                     Type = IssueTypeQualifier.Issue,
-                    Language = Language.CSharp
+                    Language = Language.CSharp,
+                    State = ItemState.Open
                 };
             }
 

@@ -10,8 +10,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace DotNetCoreReady.Controllers
 {
@@ -22,7 +20,7 @@ namespace DotNetCoreReady.Controllers
         {
             var searchResource = await GetResource<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(
-                searchTerm, 
+                searchTerm,
                 new SearchFilter(true), 0, 5, null, CancellationToken.None);
 
             var models = searchMetadata
@@ -35,10 +33,7 @@ namespace DotNetCoreReady.Controllers
         [HttpGet]
         public async Task<JsonResult> Search(string searchTerm)
         {
-            var searchResource = await GetResource<PackageSearchResource>();
-            var searchMetadata = await searchResource.SearchAsync(
-                searchTerm,
-                new SearchFilter(true), 0, 5, null, CancellationToken.None);
+            var searchMetadata = await SearchInternal(searchTerm);
 
             var models = searchMetadata
                 .Select(s => s.ToLookupViewModel())
@@ -52,34 +47,22 @@ namespace DotNetCoreReady.Controllers
         {
             var versions = await FindLatestVersions(id);
             var models = versions.Select(v => v.ToLookupViewModel());
+
             return Json(models, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
         public async Task<JsonResult> Alternatives(string id)
         {
-            //var result = new[]
-            //{
-            //    new NugetPackageModel
-            //    {
-            //        Id = "Thing.Thing",
-            //        ProjectUrl = "http://thing.com",
-            //        Version = "1.2.3"
-            //    },
-            //    new NugetPackageModel
-            //    {
-            //        Id = "Thing.Thing",
-            //        ProjectUrl = "http://thing.com",
-            //        Version = "1.2.3"
-            //    }
-            //};
-
-            //return Json(result, JsonRequestBehavior.AllowGet);
-
             var latestVersions = await FindLatestVersions(id, 1);
+
+            if (!latestVersions.Any())
+            {
+                return Json(Enumerable.Empty<NugetPackageModel>(), JsonRequestBehavior.AllowGet);
+            }
+
             var tags = latestVersions.Select(v => v.Tags).First();
-            var searchResource = await GetResource<PackageSearchResource>();
-            var searchRequest = await searchResource.SearchAsync(tags, new SearchFilter(true), 0, 5, new NullLogger(), CancellationToken.None);
+            var searchRequest = await SearchInternal(tags, true);
             var response = searchRequest
                 .Select(s => s.ToViewModel())
                 .ToList();
@@ -94,6 +77,7 @@ namespace DotNetCoreReady.Controllers
             providers.AddRange(Repository.Provider.GetCoreV3());
             var packageSource = new PackageSource("https://api.nuget.org/v3/index.json");
             var sourceRepository = new SourceRepository(packageSource, providers);
+
             return sourceRepository.GetResourceAsync<T>();
         }
 
@@ -106,6 +90,23 @@ namespace DotNetCoreReady.Controllers
                 .Take(count);
 
             return versions;
+        }
+
+        private static async Task<IEnumerable<IPackageSearchMetadata>> SearchInternal(
+            string searchTerm,
+            bool netStandardOnly = false)
+        {
+            var filter = new SearchFilter(true);
+
+            if (netStandardOnly)
+                filter.SupportedFrameworks = new[] { ".NETStandard" };
+
+            var searchResource = await GetResource<PackageSearchResource>();
+            var searchMetadata = await searchResource.SearchAsync(
+                searchTerm,
+                new SearchFilter(true), 0, 5, new NullLogger(), CancellationToken.None);
+
+            return searchMetadata;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace DotNetCoreReady.Extensions
                 Title = issue.Title,
                 Url = issue.HtmlUrl.ToString(),
                 IsOpen = issue.State == ItemState.Open,
-                Body = issue.Body.Substring(0, 300),
+                Body = (issue.Body.Length > 300) ? issue.Body.Substring(0, 300) : issue.Body,
                 CreatedAt = issue.CreatedAt.DateTime
             };
         }
