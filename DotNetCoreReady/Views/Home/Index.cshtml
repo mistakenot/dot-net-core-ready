@@ -242,7 +242,7 @@
                 self.issues([]);
                 self.activeSearch = $.getJSON(
                     url,
-                    { searchTerm: packageId, url: undefined },
+                    { packageId: packageId },
                     (data) => {
                         self.issues(data);
                         self.cancel();

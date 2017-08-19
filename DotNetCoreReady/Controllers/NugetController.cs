@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using DotNetCoreReady.Extensions;
 using DotNetCoreReady.Models;
+using DotNetCoreReady.Services;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -15,25 +16,24 @@ namespace DotNetCoreReady.Controllers
 {
     public class NugetController : Controller
     {
+        private readonly NugetClient _client;
+
+        public NugetController()
+        {
+            _client = new NugetClient();
+        }
+
         [HttpGet]
         public async Task<JsonResult> Autocomplete(string searchTerm)
         {
-            var searchResource = await GetResource<PackageSearchResource>();
-            var searchMetadata = await searchResource.SearchAsync(
-                searchTerm,
-                new SearchFilter(true), 0, 5, null, CancellationToken.None);
-
-            var models = searchMetadata
-                .Select(s => s.Identity.Id)
-                .ToArray();
-
-            return Json(models, JsonRequestBehavior.AllowGet);
+            var suggestions = await _client.Autocomplete(searchTerm);
+            return Json(suggestions, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
         public async Task<JsonResult> Search(string searchTerm)
         {
-            var searchMetadata = await SearchInternal(searchTerm);
+            var searchMetadata = await _client.Search(searchTerm, false);
 
             var models = searchMetadata
                 .Select(s => s.ToLookupViewModel())

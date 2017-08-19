@@ -49,6 +49,29 @@ namespace DotNetCoreReady.Services
             return SearchInternal(term, netStandardOnly);
         }
 
+        public async Task<IEnumerable<string>> GetGithubUrl(string packageId)
+        {
+            var versions = await SearchInternal(packageId);
+
+            if (versions.Any())
+            {
+                var first = versions.First();
+                var urls = new[]
+                    {
+                        first.IconUrl,
+                        first.LicenseUrl,
+                        first.ProjectUrl,
+                        first.ReportAbuseUrl
+                    }
+                    .Where(u => u.ToString().Contains("github") && u.Segments.Length > 1)
+                    .Select(u => $"{u.Authority}/{u.Segments[0]}/{u.Segments[1]}");
+
+                return urls;
+            }
+
+            return Enumerable.Empty<string>();
+        }
+
         private async Task<IEnumerable<IPackageSearchMetadata>> SearchInternal(
             string searchTerm,
             bool netStandardOnly = false)

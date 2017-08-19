@@ -260,6 +260,7 @@
     <Compile Include="Models\NugetPackageVersion.cs" />
     <Compile Include="Models\NugetSearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\NugetClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
