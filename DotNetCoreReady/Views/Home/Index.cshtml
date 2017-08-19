@@ -23,9 +23,9 @@
                 </div>
             </form>
         </div>
-        <div class="col-sm-1">
+        <div class="col-sm-1 col-sm-offset-3">
             <br />
-            <div data-bind="visible: search.showSearch()"
+            <div data-bind="visible: search.showSearch"
                  class="progress-ring progress-large">
                 <div class="progress-circle"></div>
                 <div class="progress-circle"></div>
@@ -141,7 +141,6 @@
                         <p data-bind="text: Body">
                             This is a test
                         </p>
-
                     </td>
                 </tr>
                 </tbody>
@@ -173,15 +172,17 @@
             this.searchTerm = ko.observable("");
             this.isSearching = ko.observable(false);
             this.submitSearch = function() {
-                onSubmit(self.searchTerm());
+                if (self.searchTerm() !== "") {
+                    onSubmit(self.searchTerm());
+                }
                 self.isSearching(false);
             }
             this.isEmpty = ko.computed(() => {
                 return self.searchTerm() === "";
             });
             this.showSearch = ko.computed(() => {
-                return self.isSearching() && !self.isEmpty();
-            })
+                return self.isSearching();
+            });
         }
 
         function NugetModel(onResults) {
@@ -197,18 +198,18 @@
                 self.isLoading(true);
                 self.frameworks([]);
                 self.activeSearch = $.getJSON(
-                    url,
-                    { id },
-                    (data) => {
-                        self.cancel();
-                        var versions = data
-                            .map(d => new NugetVersionModel(d.PackageVersion, d.NetStandardVersions));
-                        self.frameworks(versions);
-                        if (onResults) {
-                            onResults(versions);
-                        }
-                        self.isVisible(true);
-                    })
+                        url,
+                        { id },
+                        (data) => {
+                            self.cancel();
+                            var versions = data
+                                .map(d => new NugetVersionModel(d.PackageVersion, d.NetStandardVersions));
+                            self.frameworks(versions);
+                            if (onResults) {
+                                onResults(versions);
+                            }
+                            self.isVisible(true);
+                        })
                     .fail(() => {
                         self.cancel();
                     });
@@ -241,12 +242,12 @@
                 self.isLoading(true);
                 self.issues([]);
                 self.activeSearch = $.getJSON(
-                    url,
-                    { packageId: packageId },
-                    (data) => {
-                        self.issues(data);
-                        self.cancel();
-                    })
+                        url,
+                        { packageId: packageId },
+                        (data) => {
+                            self.issues(data);
+                            self.cancel();
+                        })
                     .fail(() => {
                         self.cancel();
                     });
@@ -271,12 +272,12 @@
                 self.items([]);
                 self.isLoading(true);
                 self.activeSearch = $.getJSON(
-                    url,
-                    { id, version },
-                    (data) => {
-                        self.items(data);
-                        this.cancel();
-                    })
+                        url,
+                        { id, version },
+                        (data) => {
+                            self.items(data);
+                            this.cancel();
+                        })
                     .fail(() => {
                         self.cancel();
                     });;

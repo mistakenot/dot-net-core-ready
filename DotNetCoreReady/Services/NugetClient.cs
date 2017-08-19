@@ -24,11 +24,11 @@ namespace DotNetCoreReady.Services
 
         public async Task<IEnumerable<string>> Autocomplete(string term)
         {
-            var searchResource = _sourceRepository.GetResource<PackageSearchResource>();
+            var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(
                 term,
                 new SearchFilter(true), 0, 5, null, CancellationToken.None);
-
+            
             var models = searchMetadata
                 .Select(s => s.Identity.Id)
                 .ToArray();
@@ -49,7 +49,7 @@ namespace DotNetCoreReady.Services
             return SearchInternal(term, netStandardOnly);
         }
 
-        public async Task<IEnumerable<string>> GetGithubUrl(string packageId)
+        public async Task<IEnumerable<Uri>> GetGithubUrls(string packageId)
         {
             var versions = await SearchInternal(packageId);
 
@@ -63,13 +63,16 @@ namespace DotNetCoreReady.Services
                         first.ProjectUrl,
                         first.ReportAbuseUrl
                     }
-                    .Where(u => u.ToString().Contains("github") && u.Segments.Length > 1)
-                    .Select(u => $"{u.Authority}/{u.Segments[0]}/{u.Segments[1]}");
+                    .Where(u => u != null)
+                    .Where(u => u.Authority.Contains("github") && u.Segments.Length > 1)
+                    .Select(u => $@"https://github.com/{u.Segments[1]}{u.Segments[2]}")
+                    .Select(u => new Uri(u))
+                    .ToArray();
 
                 return urls;
             }
 
-            return Enumerable.Empty<string>();
+            return Enumerable.Empty<Uri>();
         }
 
         private async Task<IEnumerable<IPackageSearchMetadata>> SearchInternal(
@@ -81,7 +84,7 @@ namespace DotNetCoreReady.Services
             if (netStandardOnly)
                 filter.SupportedFrameworks = new[] { ".NETStandard" };
 
-            var searchResource = _sourceRepository.GetResource<PackageSearchResource>();
+            var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(
                 searchTerm,
                 new SearchFilter(true), 0, 5, new NullLogger(), CancellationToken.None);

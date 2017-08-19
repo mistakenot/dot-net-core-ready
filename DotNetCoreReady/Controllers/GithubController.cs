@@ -25,7 +25,7 @@ namespace DotNetCoreReady.Controllers
         [HttpGet]
         public async Task<ActionResult> Search(string packageId)
         {
-            var githubUrls = await _nugetClient.GetGithubUrl(packageId);
+            var githubUrls = await _nugetClient.GetGithubUrls(packageId);
             var url = githubUrls.FirstOrDefault();
 
             if (url == null)
@@ -33,31 +33,19 @@ namespace DotNetCoreReady.Controllers
                 return Json(Enumerable.Empty<GithubIssueModel>(), JsonRequestBehavior.AllowGet);
             }
 
-            var findRepoResponse = await _githubClient.Search.SearchRepo(null);
-            var repoCollection = new RepositoryCollection();
+            var owner = url.Segments[1].Trim('/');
+            var name = url.Segments[2].Trim('/');
 
-            foreach (var repoResponse in findRepoResponse.Items.Take(1))
-            {
-                repoCollection.Add(repoResponse.Owner.Login, repoResponse.Name);
-            }
+            var repoCollection = new RepositoryCollection {{owner, name}};
 
             var searchIssuesRequest = new SearchIssuesRequest(".NET Core Standard")
             {
                 Repos = repoCollection,
                 Type = IssueTypeQualifier.Issue,
-                Language = Language.CSharp,
-                State = ItemState.Open
+                State = ItemState.Open,
+                Page = 0,
+                PerPage = 8
             };
-            
-
-            //var response = new[]
-            //{
-            //    new GithubIssueModel() {IsOpen = true, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
-            //    new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"},
-            //    new GithubIssueModel() {IsOpen = false, Title = "A title", Url = "http://github.com", Summary = "This is a comment summary"}
-            //};
-
-            //return Json(response, JsonRequestBehavior.AllowGet);
 
             var issuesSearchResult = await _githubClient.Search.SearchIssues(searchIssuesRequest);
             var response = issuesSearchResult.Items.Select(r => r.ToViewModel());
