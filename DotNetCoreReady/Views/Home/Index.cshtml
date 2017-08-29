@@ -2,149 +2,25 @@
     ViewBag.Title = "Home Page";
 }
 
-<section>
-    <div class="row">
-        <div class="col-sm-10 col-sm-offset-7">
-            <form data-bind="submit: search.submitSearch"
-                  class="theme-on-color color-fill-accent-vivid-high p-xxs">
-                <div class="form-group">
-                    <label for="searchTerm">
-                        <span class="glyph glyph-magnifier"></span>
-                        <span class="hidden-xs">Search for Package</span>
-                    </label>
-                    <span>
-                        <input type="text"
-                               class="form-control"
-                               id="searchTerm"
-                               placeholder="Search..."
-                               autocomplete="off"
-                               data-bind="value: search.searchTerm">
-                    </span>
-                </div>  
-            </form>
-        </div>
-        <div class="col-sm-1 col-sm-offset-3">
-            <br />
-            <div data-bind="visible: search.showSearch"
-                 class="progress-ring progress-large">
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-                <div class="progress-circle"></div>
-            </div>
-        </div>
-    </div>
+<section data-bind="with: search">
+    @Html.Partial("_Search")
 </section>
 
 <section data-bind="visible: !search.isEmpty()">
     
     <div class="row">
-        <div class="col-md-12">
-            <h4>Status</h4>
-            <div data-bind="visible: nuget.isLoading" class="glyphicon-align-center">
-                <div class="progress-ring progress-large">
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                </div>
-            </div>
-            <table data-bind="visible: nuget.isVisible()" class="table">
-                <thead>
-                <tr>
-                    <th>Package Version</th>
-                    <th>.NET Core Ready</th>
-                    <th>.NET Standard Versions</th>
-                </tr>
-                </thead>
-                <tbody data-bind="foreach: nuget.frameworks">
-                    <tr data-bind="css: {success: supportsNetCore, danger: !supportsNetCore}">
-                        <td>
-                            <span data-bind="text: packageVersion"></span>
-                        </td>
-                        <td>
-                            <span class="glyph glyph-checkmark"
-                                  data-bind="visible: supportsNetCore"
-                                  aria-hidden="true"></span>
-                            <span class="glyph glyph-cancel"
-                                  data-bind="visible: !supportsNetCore"
-                                  aria-hidden="true"></span>
-                        </td>
-                        <td data-bind="text: netStandardVersions"></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="col-md-12" data-bind="with: nuget">
+            @Html.Partial("_Status")
         </div>
 
-        <div class="col-md-12">
-            <h4>Alternatives</h4>
-            <div data-bind="visible: alternatives.isLoading" class="glyphicon-align-center">
-                <div class="progress-ring progress-large">
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                </div>
-            </div>
-            <table class="table table-striped" data-bind="visible: alternatives.isVisible()">
-                <thead>
-                <tr>
-                    <th>Package Name</th>
-                    <th class="text-right">.NET Standard Versions</th>
-                </tr>
-                </thead>
-                <tbody data-bind="foreach: alternatives.items">
-                <tr>
-                    <td>
-                        <a data-bind="text: Id, attr: {href: ProjectUrl}"></a>
-                    </td>
-                    <td class="text-right">
-                        <p data-bind="text: Version"></p>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="col-md-12" data-bind="with: alternatives">
+            @Html.Partial("_Alternatives")
         </div>
     </div>
 
     <div class="row">
-        <div class="col-xs-24">
-            <h4>Open Github Issues</h4>
-            <div data-bind="visible: github.isLoading" class="glyphicon-align-center">
-                <div class="progress-ring progress-large">
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                    <div class="progress-circle"></div>
-                </div>
-            </div>
-            <table class="table table-striped" data-bind="visible: github.showResults()">
-                <thead>
-                <tr>
-                    <th>Github Issues</th>
-                </tr>
-                </thead>
-                <tbody data-bind="foreach: github.issues">
-                <tr>
-                    <td>
-                        <h6>
-                            <span class="type-sh2">
-                                <a data-bind="text: Title, attr: {href: Url}"></a>
-                            </span>
-                            <span class="label label-warning" data-bind="visible: IsOpen">Open</span>
-                            <span class="label label-primary" data-bind="visible: !IsOpen">Closed</span>
-                        </h6>
-                        <p data-bind="text: Body">
-                            
-                        </p>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="col-xs-24" data-bind="with: github">
+            @Html.Partial("_Github")
         </div>
     </div>
 

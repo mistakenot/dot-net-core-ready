@@ -312,6 +312,10 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Service References\Application Insights\ConnectedService.json" />
+    <Content Include="Views\Home\_Search.cshtml" />
+    <Content Include="Views\Home\_Status.cshtml" />
+    <Content Include="Views\Home\_Alternatives.cshtml" />
+    <Content Include="Views\Home\_Github.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

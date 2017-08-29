@@ -1,0 +1,28 @@
+﻿<h4>Alternatives</h4>
+<div data-bind="visible: isLoading" class="glyphicon-align-center">
+    <div class="progress-ring progress-large">
+        <div class="progress-circle"></div>
+        <div class="progress-circle"></div>
+        <div class="progress-circle"></div>
+        <div class="progress-circle"></div>
+        <div class="progress-circle"></div>
+    </div>
+</div>
+<table class="table table-striped" data-bind="visible: isVisible()">
+    <thead>
+    <tr>
+        <th>Package Name</th>
+        <th class="text-right">.NET Standard Versions</th>
+    </tr>
+    </thead>
+    <tbody data-bind="foreach: items">
+    <tr>
+        <td>
+            <a data-bind="text: Id, attr: {href: ProjectUrl}"></a>
+        </td>
+        <td class="text-right">
+            <p data-bind="text: Version"></p>
+        </td>
+    </tr>
+    </tbody>
+</table>

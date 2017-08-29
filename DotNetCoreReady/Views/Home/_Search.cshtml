@@ -1,0 +1,32 @@
+﻿<div class="row">
+    <div class="col-sm-10 col-sm-offset-7">
+        <form data-bind="submit: submitSearch"
+              class="theme-on-color color-fill-accent-vivid-high p-xxs">
+            <div class="form-group">
+                <label for="searchTerm">
+                    <span class="glyph glyph-magnifier"></span>
+                    <span class="hidden-xs">Search for Package</span>
+                </label>
+                <span>
+                    <input type="text"
+                           class="form-control"
+                           id="searchTerm"
+                           placeholder="Search..."
+                           autocomplete="off"
+                           data-bind="value: searchTerm">
+                </span>
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-1 col-sm-offset-3">
+        <br />
+        <div data-bind="visible: showSearch"
+             class="progress-ring progress-large">
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+            <div class="progress-circle"></div>
+        </div>
+    </div>
+</div>
