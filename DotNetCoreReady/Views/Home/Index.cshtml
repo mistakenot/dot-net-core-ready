@@ -20,7 +20,7 @@
                                autocomplete="off"
                                data-bind="value: search.searchTerm">
                     </span>
-                </div>
+                </div>  
             </form>
         </div>
         <div class="col-sm-1 col-sm-offset-3">
@@ -60,20 +60,20 @@
                 </tr>
                 </thead>
                 <tbody data-bind="foreach: nuget.frameworks">
-                <tr data-bind="css: {success: supportsNetCore, danger: !supportsNetCore}">
-                    <td>
-                        <span data-bind="text: packageVersion"></span>
-                    </td>
-                    <td>
-                        <span class="glyph glyph-checkmark"
-                              data-bind="visible: supportsNetCore"
-                              aria-hidden="true"></span>
-                        <span class="glyph glyph-cancel"
-                              data-bind="visible: !supportsNetCore"
-                              aria-hidden="true"></span>
-                    </td>
-                    <td data-bind="text: netStandardVersions"></td>
-                </tr>
+                    <tr data-bind="css: {success: supportsNetCore, danger: !supportsNetCore}">
+                        <td>
+                            <span data-bind="text: packageVersion"></span>
+                        </td>
+                        <td>
+                            <span class="glyph glyph-checkmark"
+                                  data-bind="visible: supportsNetCore"
+                                  aria-hidden="true"></span>
+                            <span class="glyph glyph-cancel"
+                                  data-bind="visible: !supportsNetCore"
+                                  aria-hidden="true"></span>
+                        </td>
+                        <td data-bind="text: netStandardVersions"></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -122,7 +122,7 @@
                     <div class="progress-circle"></div>
                 </div>
             </div>
-            <table class="table table-striped">
+            <table class="table table-striped" data-bind="visible: github.showResults()">
                 <thead>
                 <tr>
                     <th>Github Issues</th>
@@ -139,7 +139,7 @@
                             <span class="label label-primary" data-bind="visible: !IsOpen">Closed</span>
                         </h6>
                         <p data-bind="text: Body">
-                            This is a test
+                            
                         </p>
                     </td>
                 </tr>
@@ -160,7 +160,7 @@
             <p class="type-p1">See compatible alternatives.</p>
         </div>
         <div class="col-md-8">
-            <p class="type-p1">Find relative Github issues.</p>
+            <p class="type-p1">Find relevant Github issues.</p>
         </div>
     </div>
 </section>
@@ -223,6 +223,9 @@
             this.isVisible = () => {
                 return !self.isDirty() && !self.isLoading();
             }
+            this.isEmpty = ko.computed(() => {
+                return self.frameworks().length === 0;
+            });
         }
 
         function NugetVersionModel(version, netStandardVersions) {
@@ -258,6 +261,10 @@
                     self.activeSearch.abort();
                 }
                 self.isLoading(false);
+            }
+
+            this.showResults = () => {
+                return !self.isLoading();
             }
         }
 

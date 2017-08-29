@@ -62,8 +62,8 @@ namespace DotNetCoreReady.Controllers
             }
 
             var tags = latestVersions.Select(v => v.Tags).First();
-            var searchRequest = await SearchInternal(tags, true);
-            var response = searchRequest
+            var searchResponse = await SearchInternal(tags, true);
+            var response = searchResponse
                 .Select(s => s.ToViewModel())
                 .ToList();
 
@@ -96,10 +96,15 @@ namespace DotNetCoreReady.Controllers
             string searchTerm,
             bool netStandardOnly = false)
         {
-            var filter = new SearchFilter(true);
-
+            var filter = new SearchFilter(true)
+            {
+                IncludeDelisted = false
+            };
+            
             if (netStandardOnly)
-                filter.SupportedFrameworks = new[] { ".NETStandard" };
+            {
+                filter.SupportedFrameworks = new[] {".NETStandard"};
+            }
 
             var searchResource = await GetResource<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(

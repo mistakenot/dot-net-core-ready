@@ -64,7 +64,7 @@ namespace DotNetCoreReady.Services
                         first.ReportAbuseUrl
                     }
                     .Where(u => u != null)
-                    .Where(u => u.Authority.Contains("github") && u.Segments.Length > 1)
+                    .Where(u => u.Authority.Contains("github") && u.Segments.Length > 2)
                     .Select(u => $@"https://github.com/{u.Segments[1]}{u.Segments[2]}")
                     .Select(u => new Uri(u))
                     .ToArray();
