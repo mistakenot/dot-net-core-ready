@@ -27,9 +27,10 @@ namespace DotNetCoreReady.Services
             var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(
                 term,
-                new SearchFilter(true), 0, 5, null, CancellationToken.None);
+                new SearchFilter(true), 0, 20, null, CancellationToken.None);
             
             var models = searchMetadata
+                .OrderByDescending(s => s.DownloadCount)
                 .Select(s => s.Identity.Id)
                 .ToArray();
 
@@ -82,7 +83,14 @@ namespace DotNetCoreReady.Services
             var filter = new SearchFilter(true);
 
             if (netStandardOnly)
-                filter.SupportedFrameworks = new[] { ".NETStandard" };
+            {
+                filter.SupportedFrameworks = new[]
+                {
+                    ".NETStandard 1.0", ".NETStandard 1.1", ".NETStandard 1.2", ".NETStandard 1.3", ".NETStandard 1.4",
+                    ".NETStandard 1.5", ".NETStandard 1.6", ".NETStandard 1.7", ".NETStandard 1.8", ".NETStandard 1.9",
+                    ".NETStandard 2.0", ".NETStandard 2.1"
+                };
+            }
 
             var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(

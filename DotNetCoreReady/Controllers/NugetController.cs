@@ -62,9 +62,10 @@ namespace DotNetCoreReady.Controllers
             }
 
             var tags = latestVersions.Select(v => v.Tags).First();
-            var searchResponse = await SearchInternal(tags, true);
+            var searchResponse = await _client.Search(tags, true);
             var response = searchResponse
                 .Select(s => s.ToViewModel())
+                .Where(s => s.Id != id)
                 .ToList();
 
             return Json(response, JsonRequestBehavior.AllowGet);
@@ -90,28 +91,6 @@ namespace DotNetCoreReady.Controllers
                 .Take(count);
 
             return versions;
-        }
-
-        private static async Task<IEnumerable<IPackageSearchMetadata>> SearchInternal(
-            string searchTerm,
-            bool netStandardOnly = false)
-        {
-            var filter = new SearchFilter(true)
-            {
-                IncludeDelisted = false
-            };
-            
-            if (netStandardOnly)
-            {
-                filter.SupportedFrameworks = new[] {".NETStandard"};
-            }
-
-            var searchResource = await GetResource<PackageSearchResource>();
-            var searchMetadata = await searchResource.SearchAsync(
-                searchTerm,
-                new SearchFilter(true), 0, 5, new NullLogger(), CancellationToken.None);
-
-            return searchMetadata;
         }
     }
 }
