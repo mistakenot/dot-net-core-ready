@@ -18,7 +18,7 @@ namespace DotNetCoreReady.Tests.Controllers
         public void NugetController_GetFrameworks_Ok()
         {
             var controller = new NugetController();
-            var result = controller.Frameworks("Newtonsoft.Json", "10.0.3").Result;
+            var result = controller.Frameworks("Newtonsoft.Json").Result;
         }
     }
 }
