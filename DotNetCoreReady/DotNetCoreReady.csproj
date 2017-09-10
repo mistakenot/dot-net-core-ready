@@ -253,6 +253,7 @@
     <Compile Include="Controllers\NugetController.cs" />
     <Compile Include="Extensions\GithubExtensions.cs" />
     <Compile Include="Extensions\GithubIssueModel.cs" />
+    <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Extensions\PackageExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
