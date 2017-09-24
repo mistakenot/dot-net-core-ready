@@ -1,0 +1,17 @@
+﻿<script>
+    ko.components.register("loading-spinner",
+        {
+            viewModel: function(params) {
+                this.show = params.show;
+            },
+            template: "\
+            <div data-bind='visible: show'\
+                class='progress-ring progress-large'>\
+                <div class='progress-circle'></div>\
+                <div class='progress-circle'></div>\
+                <div class='progress-circle'></div>\
+                <div class='progress-circle'></div>\
+                <div class='progress-circle'></div>\
+            </div>"
+        });
+</script>

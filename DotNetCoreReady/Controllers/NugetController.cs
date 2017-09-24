@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.ModelBinding;
 using System.Web.Mvc;
 using DotNetCoreReady.Extensions;
-using DotNetCoreReady.Models;
 using DotNetCoreReady.Services;
+using Newtonsoft.Json;
+using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 
 namespace DotNetCoreReady.Controllers
@@ -65,7 +65,7 @@ namespace DotNetCoreReady.Controllers
         {
             IPackageSearchMetadata metadata;
 
-            if (version == null)
+            if (string.IsNullOrEmpty(version))
             {
                 var searchResults = await _client.FindLatestVersions(packageId, 1);
                 metadata = searchResults.FirstOrDefault();
@@ -75,26 +75,20 @@ namespace DotNetCoreReady.Controllers
                 metadata = await _client.FindVersion(packageId, version);
             }
             
-            if (metadata != null)
-            {
-                var deps = metadata
-                    .DependencySets
-                    .Select(ds => new
+            var deps = (metadata != null ? metadata.DependencySets : Enumerable.Empty<PackageDependencyGroup>())
+                .Select(ds => new
+                {
+                    Framework = ds.TargetFramework.ToString(),
+                    Dependencies = ds.Packages.Select(p => new
                     {
-                        Framework = ds.TargetFramework.ToString(),
-                        Dependencies = ds.Packages.Select(p => new
-                        {
-                            p.Id,
-                            Version = p.VersionRange.ToShortString(),
-                            Url = Url.Action("Dependencies", "Nuget", new { packageId = p.Id })
-                        })
+                        p.Id,
+                        Version = p.VersionRange.ToShortString(),
+                        Url = Url.Action("Dependencies", "Nuget", new { packageId = p.Id, version = p.VersionRange.ToShortString() })
                     })
-                    .ToArray();
+                })
+                .ToArray();
 
-                return Json(deps, JsonRequestBehavior.AllowGet);
-            }
-
-            return Json(new object[0], JsonRequestBehavior.AllowGet);
+            return Json(deps, JsonRequestBehavior.AllowGet);
         }
     }
 }

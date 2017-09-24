@@ -21,15 +21,18 @@
 </head>
 <body> 
     <nav class="navbar color-accent theme-dark">
-        @*<div class="navbar-global theme-default">
+        <div class="navbar-local color-accent theme-dark">
             <div class="container">
                 <div class="navbar-header">
-                    <a href="http://www.microsoft.com" class="navbar-brand">
-                        <img src="https://assets.onestore.ms/cdnfiles/onestorerolling-1511-11008/shell/v3/images/logo/microsoft.png" alt="Microsoft" height="23" />
+                    <a href="/" class="navbar-brand no-outline">
+                        Home
+                    </a>
+                    <a class="navbar-brand no-outline" href="@Url.Action("Index", "Dependencies")">
+                        Dependencies
                     </a>
                 </div>
             </div>
-        </div>*@
+        </div>
     </nav>   
 
 <div class="jumbotron theme-light">
@@ -60,6 +63,7 @@
 @Scripts.Render("~/bundles/jquery")
 @Scripts.Render("~/bundles/bootstrap")
 @Scripts.Render("~/bundles/knockout")
+@Html.Partial("_Components")
 @RenderSection("scripts", required: false)
 </body>
 </html>

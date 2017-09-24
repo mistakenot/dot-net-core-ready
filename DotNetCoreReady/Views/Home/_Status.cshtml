@@ -1,12 +1,6 @@
 ﻿<h4>Status</h4>
-<div data-bind="visible: isLoading" class="glyphicon-align-center">
-    <div class="progress-ring progress-large">
-        <div class="progress-circle"></div>
-        <div class="progress-circle"></div>
-        <div class="progress-circle"></div>
-        <div class="progress-circle"></div>
-        <div class="progress-circle"></div>
-    </div>
+<div class="glyphicon-align-center">
+    <loading-spinner params="show: isLoading"></loading-spinner>
 </div>
 <table data-bind="visible: isVisible()" class="table">
     <thead>
