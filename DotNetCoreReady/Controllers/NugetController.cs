@@ -3,10 +3,12 @@ using System.Threading.Tasks;
 using System.Web.ModelBinding;
 using System.Web.Mvc;
 using DotNetCoreReady.Extensions;
+using DotNetCoreReady.Models;
 using DotNetCoreReady.Services;
 using Newtonsoft.Json;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace DotNetCoreReady.Controllers
 {
@@ -64,6 +66,17 @@ namespace DotNetCoreReady.Controllers
             [QueryString]string version = null)
         {
             IPackageSearchMetadata metadata;
+
+            if (string.IsNullOrEmpty(packageId))
+            {
+                return Json(new {Error = true, Msg = "Package ID is invalid."}, JsonRequestBehavior.AllowGet);
+            }
+
+            NuGetVersion nugetVersion;
+            if (!string.IsNullOrEmpty(version) && !NuGetVersion.TryParse(version, out nugetVersion))
+            {
+                return Json(new {Error = true, Msg = "Package version is invalid."}, JsonRequestBehavior.AllowGet);
+            }
 
             if (string.IsNullOrEmpty(version))
             {

@@ -327,10 +327,10 @@
     <Content Include="Views\Dependencies\Index.cshtml" />
     <Content Include="Views\Home\_Layout.cshtml" />
     <Content Include="Views\Shared\_Components.cshtml" />
+    <Content Include="Views\Shared\_LoadingSpinner.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Content\client\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
