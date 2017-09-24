@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using DotNetCoreReady.Extensions;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace DotNetCoreReady.Services
 {
@@ -53,6 +55,9 @@ namespace DotNetCoreReady.Services
 
         public async Task<IEnumerable<IPackageSearchMetadata>> Alternatives(string id)
         {
+            // At the moment, search functionality on nuget can't search by framework, so we
+            //  have to pull a bunch of random search results and do a second query for each one.
+
             if (string.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
 
             var latestVersions = await FindLatestVersions(id);
@@ -65,22 +70,26 @@ namespace DotNetCoreReady.Services
             var tags = latestVersions.Select(v => v.Tags).First();
             var searchMetadata = await SearchInternal(tags, true, 25);
 
-            var frameworkCheckTasks = searchMetadata.Where(s => s.Identity.Id != id).Select(async m =>
-            {
-                var versions = await GetPackageVersionsById(m.Identity.Id);
-                return versions.Where(
-                    v => v.DependencySets.Any(ds => ds.TargetFramework.Framework.StartsWith(".NETStandard")));
-            });
+            var frameworkCheckTasks = searchMetadata
+                .Where(s => string.Compare(s.Identity.Id, id, StringComparison.OrdinalIgnoreCase) != 0 &&
+                            !s.Identity.Id.ToLower().Contains(id.ToLower()))
+                .Select(async m =>
+                {
+                    var versions = await GetPackageVersionsById(m.Identity.Id);
+                    return versions.Where(
+                        v => v.DependencySets.Any(ds => ds.TargetFramework.Framework.StartsWith(".NETStandard")));
+                });
+            
+            var results = await frameworkCheckTasks.WhenSome(5);
 
-            var results = await Task.WhenAll(frameworkCheckTasks.ToArray());
             searchMetadata = results
-                .SelectMany(_ => _)
+                .SelectMany(t => t.Result)
+                .DistinctBy(s => s.Identity.Id)
                 .OrderByDescending(s => s.DownloadCount)
-                .DistinctBy(s => s.Identity.Id);
+                .Take(5)
+                .ToList();
 
-            return searchMetadata
-                .OrderByDescending(s => s.DownloadCount)
-                .Take(5);
+            return searchMetadata;
         }
 
         public async Task<IEnumerable<Uri>> GetGithubUrls(string packageId)
@@ -120,22 +129,22 @@ namespace DotNetCoreReady.Services
             return versions;
         }
 
+        public async Task<IPackageSearchMetadata> FindVersion(string id, string version)
+        {
+            var resource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>();
+            var metadata = await resource.GetMetadataAsync(
+                new PackageIdentity(id, NuGetVersion.Parse(version)),
+                new NullLogger(), 
+                CancellationToken.None);
+
+            return metadata;
+        }
+
         private async Task<IEnumerable<IPackageSearchMetadata>> SearchInternal(
             string searchTerm,
             bool netStandardOnly = false,
             int limit = 5)
         {
-            if (netStandardOnly)
-            {
-                // Not currently supported by nuget api
-                //filter.SupportedFrameworks = new[]
-                //{
-                //    ".NETStandard 1.0", ".NETStandard 1.1", ".NETStandard 1.2", ".NETStandard 1.3", ".NETStandard 1.4",
-                //    ".NETStandard 1.5", ".NETStandard 1.6", ".NETStandard 1.7", ".NETStandard 1.8", ".NETStandard 1.9",
-                //    ".NETStandard 2.0", ".NETStandard 2.1"
-                //};
-            }
-
             var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(
                 searchTerm,

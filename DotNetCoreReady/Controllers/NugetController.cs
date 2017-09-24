@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Web.ModelBinding;
 using System.Web.Mvc;
 using DotNetCoreReady.Extensions;
 using DotNetCoreReady.Models;
 using DotNetCoreReady.Services;
+using NuGet.Protocol.Core.Types;
 
 namespace DotNetCoreReady.Controllers
 {
@@ -53,6 +56,45 @@ namespace DotNetCoreReady.Controllers
                 .ToArray();
 
             return Json(response, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> Dependencies(
+            [QueryString]string packageId,
+            [QueryString]string version = null)
+        {
+            IPackageSearchMetadata metadata;
+
+            if (version == null)
+            {
+                var searchResults = await _client.FindLatestVersions(packageId, 1);
+                metadata = searchResults.FirstOrDefault();
+            }
+            else
+            {
+                metadata = await _client.FindVersion(packageId, version);
+            }
+            
+            if (metadata != null)
+            {
+                var deps = metadata
+                    .DependencySets
+                    .Select(ds => new
+                    {
+                        Framework = ds.TargetFramework.ToString(),
+                        Dependencies = ds.Packages.Select(p => new
+                        {
+                            p.Id,
+                            Version = p.VersionRange.ToShortString(),
+                            Url = Url.Action("Dependencies", "Nuget", new { packageId = p.Id })
+                        })
+                    })
+                    .ToArray();
+
+                return Json(deps, JsonRequestBehavior.AllowGet);
+            }
+
+            return Json(new object[0], JsonRequestBehavior.AllowGet);
         }
     }
 }
