@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using System.Web.UI;
 using DotNetCoreReady.Extensions;
 using DotNetCoreReady.Services;
 using Octokit;
@@ -23,6 +24,7 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
+        [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "packageId")]
         public async Task<ActionResult> Search(string packageId)
         {
             var githubUrls = await _nugetClient.GetGithubUrls(packageId);

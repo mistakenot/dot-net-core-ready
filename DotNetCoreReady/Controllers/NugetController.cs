@@ -2,10 +2,9 @@
 using System.Threading.Tasks;
 using System.Web.ModelBinding;
 using System.Web.Mvc;
+using System.Web.UI;
 using DotNetCoreReady.Extensions;
-using DotNetCoreReady.Models;
 using DotNetCoreReady.Services;
-using Newtonsoft.Json;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -22,6 +21,7 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
+        [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "searchTerm")]
         public async Task<JsonResult> Autocomplete(string searchTerm)
         {
             var suggestions = await _client.Autocomplete(searchTerm);
@@ -29,6 +29,7 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
+        [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "searchTerm")]
         public async Task<JsonResult> Search(string searchTerm)
         {
             var searchMetadata = await _client.Search(searchTerm, false);
@@ -41,6 +42,7 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
+        [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "id")]
         public async Task<JsonResult> Frameworks(string id)
         {
             var versions = await _client.FindLatestVersions(id);
@@ -50,6 +52,7 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
+        [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "id")]
         public async Task<JsonResult> Alternatives(string id)
         {
             var searchResponse = await _client.Alternatives(id);
@@ -61,6 +64,7 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
+        [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "packageId;version")]
         public async Task<JsonResult> Dependencies(
             [QueryString]string packageId,
             [QueryString]string version = null)

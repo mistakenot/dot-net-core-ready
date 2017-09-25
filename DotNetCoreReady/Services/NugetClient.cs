@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,8 +45,19 @@ namespace DotNetCoreReady.Services
         {
             var resource = _sourceRepository.GetResource<PackageMetadataResource>();
             var metadata = await resource.GetMetadataAsync(id, true, false, new NullLogger(), CancellationToken.None);
-
-            return metadata.OrderByDescending(p => p.Identity.Version);
+            
+            try
+            {
+                return metadata.OrderByDescending(p => p.Identity.Version).ToList();
+            }
+            catch (ArgumentException e)
+            {
+                // Throws when looking up some older packages due to version issues.
+                // https://github.com/NuGet/Home/issues/5935
+                Trace.TraceError($"Versioning error looking up {id}");
+                Trace.TraceError(e.ToString());
+                return Enumerable.Empty<IPackageSearchMetadata>();
+            }
         }
 
         public Task<IEnumerable<IPackageSearchMetadata>> Search(string term, bool netStandardOnly)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -20,8 +21,9 @@ namespace DotNetCoreReady
 
         protected void Application_Error(object sender, EventArgs e)
         {
-            // Code that runs when an unhandled error occurs
+            // TODO Proper fucking logging would be nice
             var ex = Server.GetLastError();
+            Trace.TraceError(e.ToString());
         }
     }
 }
