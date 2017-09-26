@@ -20,17 +20,20 @@
     </script>
 </head>
 <body> 
-    <nav class="navbar color-accent theme-dark">
+    <nav class="navbar color-accent theme-dark" style="min-height: 12px">
         <div class="navbar-local color-accent theme-dark">
             <div class="container">
-                <div class="navbar-header">
-                    <a href="/" class="navbar-brand no-outline">
+                <div class="collapse navbar-collapse">
+                    @*<a href="/" class="navbar-brand no-outline">
                         Home
                     </a>
                     <a class="navbar-brand no-outline" href="@Url.Action("Index", "Dependencies")">
                         Dependencies
-                    </a>
+                    </a>*@
                 </div>
+                <ul class="nav navbar-nav navbar-right">
+                    
+                </ul>
             </div>
         </div>
     </nav>   
@@ -38,10 +41,18 @@
 <div class="jumbotron theme-light">
     <div class="container">
         <div class="row">
-            <div class="col-md-24 text-center">
-                <h1>.NET Core Ready</h1>
-                <div class="type-sh3">
-                    Check whether your favourite NuGet packages are ready for .NET Core.
+            <div class="col-xs-24 text-center">
+                <div class="visible-sm visible-md visible-lg">
+                    <h1>.NET Core Ready</h1>
+                    <div class="type-sh3">
+                        Check whether your favourite NuGet packages are ready for .NET Core.
+                    </div>
+                </div>
+                <div class="visible-xs">
+                    <h2>.NET Core Ready</h2>
+                    <div class="type-h6">
+                        Check whether your favourite NuGet packages are ready for .NET Core.
+                    </div>
                 </div>
             </div>
         </div>
@@ -54,9 +65,21 @@
         @RenderBody()
     <hr/>
     <footer>
-        <p>
-            Created by <a href="https://twitter.com/jazzyskeltor">@@jazzyskeltor</a> on <a href="https://github.com/mistakenot/dot-net-core-ready">Github</a>.
-        </p>
+        <div class="row">
+            <div class="col-xs-24">
+                <div class="text-center">
+                    <br/>
+                    <div class="addthis_inline_share_toolbox"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-24">
+                <p class="text-center">
+                    Created by <a href="https://twitter.com/jazzyskeltor">@@jazzyskeltor</a> on <a href="https://github.com/mistakenot/dot-net-core-ready">Github</a>.
+                </p>
+            </div>
+        </div>
     </footer>
 </div>
 
@@ -65,5 +88,6 @@
 @Scripts.Render("~/bundles/knockout")
 @Html.Partial("_Components")
 @RenderSection("scripts", required: false)
+<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-59ca7217e33ad650"></script>
 </body>
 </html>

@@ -8,8 +8,9 @@ namespace DotNetCoreReady.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index()
+        public ActionResult Index(string id = null)
         {
+            ViewBag.DefaultId = id;
             return View();
         }
     }

@@ -1,5 +1,6 @@
 ﻿@{
     ViewBag.Title = "Home Page";
+    var defaultId = ViewBag.DefaultId ?? "";
 }
 
 <section data-bind="with: search">
@@ -28,7 +29,7 @@
 
 <section data-bind="visible: search.isEmpty()">
     <br/>
-    <div class="row text-center">
+    <div class="row text-center hidden-xs">
         <div class="col-md-8">
             <p class="type-p1">Search for package status.</p>
         </div>
@@ -45,7 +46,7 @@
     <script>
         function SearchModel(onSubmit) {
             var self = this;
-            this.searchTerm = ko.observable("");
+            this.searchTerm = ko.observable('@defaultId');
             this.isSearching = ko.observable(false);
             this.submitSearch = function() {
                 if (self.searchTerm() !== "") {
@@ -223,5 +224,7 @@
             }
         });
 
+        // This will fire in case of a default id provided
+        model.search.submitSearch();
     </script>
 }
