@@ -67,41 +67,48 @@ namespace DotNetCoreReady.Services
 
         public async Task<IEnumerable<IPackageSearchMetadata>> Alternatives(string id)
         {
-            // At the moment, search functionality on nuget can't search by framework, so we
-            //  have to pull a bunch of random search results and do a second query for each one.
-
             if (string.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
 
-            var latestVersions = await FindLatestVersions(id);
+            var latestVersions = await FindLatestVersions(id, 1);
 
             if (!latestVersions.Any())
             {
                 return Enumerable.Empty<IPackageSearchMetadata>();
             }
 
-            var tags = latestVersions.Select(v => v.Tags).First();
-            var searchMetadata = await SearchInternal(tags, true, 25);
+            var tags = latestVersions.Single().Tags;
+            var term = $"tags:{tags}";
+            var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
+            var results = new List<IPackageSearchMetadata>();
+            var endTime = DateTime.Now.AddSeconds(3); // We're going to limit to first 5 results, or 2s.
+            var skip = 0;
 
-            var frameworkCheckTasks = searchMetadata
-                .Where(s => string.Compare(s.Identity.Id, id, StringComparison.OrdinalIgnoreCase) != 0 &&
-                            !s.Identity.Id.ToLower().Contains(id.ToLower()))
-                .Select(async m =>
+            while (DateTime.Now < endTime && results.Count < 5)
+            {
+                var filter = new SearchFilter(true, SearchFilterType.IsAbsoluteLatestVersion)
                 {
-                    var versions = await GetPackageVersionsById(m.Identity.Id);
-                    return versions.Where(
-                        v => v.DependencySets.Any(ds => ds.TargetFramework.Framework.StartsWith(".NETStandard")));
-                });
-            
-            var results = await frameworkCheckTasks.WhenSome(5);
+                    IncludeDelisted = false,
+                    SupportedFrameworks = new List<string>{ ".NETStandard" }    // Dont think this actually works yet
+                };
 
-            searchMetadata = results
-                .SelectMany(t => t.Result)
-                .DistinctBy(s => s.Identity.Id)
-                .OrderByDescending(s => s.DownloadCount)
-                .Take(5)
-                .ToList();
+                var searchMetadata = await searchResource.SearchAsync(
+                    term,
+                    filter, 
+                    skip, 
+                    10, 
+                    new NullLogger(), 
+                    CancellationToken.None);
 
-            return searchMetadata;
+                var alternatives = searchMetadata
+                    .Where(s => string.Compare(s.Identity.Id, id, StringComparison.OrdinalIgnoreCase) != 0 &&
+                                !s.Identity.Id.ToLower().Contains(id.ToLower()))
+                    .ToList();
+
+                results.AddRange(alternatives);
+                skip += searchMetadata.Count();
+            }
+
+            return results.Take(5);
         }
 
         public async Task<IEnumerable<Uri>> GetGithubUrls(string packageId)
@@ -155,24 +162,35 @@ namespace DotNetCoreReady.Services
         private async Task<IEnumerable<IPackageSearchMetadata>> SearchInternal(
             string searchTerm,
             bool netStandardOnly = false,
-            int limit = 5)
+            int limit = 5,
+            bool latestVersionOnly = false)
         {
             var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
             var searchMetadata = await searchResource.SearchAsync(
                 searchTerm,
-                new SearchFilter(true), 0, limit, new NullLogger(), CancellationToken.None);
+                new SearchFilter(true, latestVersionOnly ? (SearchFilterType?)SearchFilterType.IsLatestVersion : null), 
+                0, 
+                limit, 
+                new NullLogger(), 
+                CancellationToken.None);
 
             if (netStandardOnly)
             {
-                var frameworkCheckTasks = searchMetadata.Select(async m =>
-                {
-                    var versions = await GetPackageVersionsById(m.Identity.Id);
-                    return versions.Where(
-                        v => v.DependencySets.Any(ds => ds.TargetFramework.Framework.StartsWith(".NETStandard")));
-                });
+                var results = new List<IPackageSearchMetadata>();
 
-                var results = await Task.WhenAll(frameworkCheckTasks.ToArray());
-                searchMetadata = results.SelectMany(_ => _);
+                foreach (var metadata in searchMetadata)
+                {
+                    var versions = await GetPackageVersionsById(metadata.Identity.Id);
+                    results.AddRange(versions.Where(
+                        v => v.DependencySets.Any(ds => ds.TargetFramework.Framework.StartsWith(".NETStandard"))));
+
+                    if (results.Count() > limit)
+                    {
+                        break;
+                    }
+                }
+
+                return results;
             }
 
             return searchMetadata;

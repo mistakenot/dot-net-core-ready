@@ -20,7 +20,8 @@ namespace DotNetCoreReady.Extensions
             this IEnumerable<Task> tasks, 
             int count, 
             int milliTimeout = 5000, 
-            bool throwOnTimeout = false)
+            bool throwOnTimeout = false,
+            bool disposeRemaining = true)
         {
             var completed = new List<Task>();
             var uncompleted = tasks.ToList();
@@ -48,6 +49,11 @@ namespace DotNetCoreReady.Extensions
                 }
             }
 
+            foreach (var remaining in uncompleted)
+            {
+                remaining.Dispose();
+            }
+
             return completed;
         }
 
@@ -64,9 +70,10 @@ namespace DotNetCoreReady.Extensions
             this IEnumerable<Task<T>> tasks,
             int count,
             int milliTimeout = 5000,
-            bool throwOnTimeout = false)
+            bool throwOnTimeout = false,
+            bool disposeRemaining = true)
         {
-            var completed = await WhenSome(tasks.Cast<Task>(), count, milliTimeout, throwOnTimeout);
+            var completed = await WhenSome(tasks.Cast<Task>(), count, milliTimeout, throwOnTimeout, disposeRemaining);
             return completed.Cast<Task<T>>();
         }
     }
