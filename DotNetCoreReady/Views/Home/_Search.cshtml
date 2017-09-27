@@ -18,6 +18,12 @@
                        data-bind="value: searchTerm">
             </div>
         </form>
+        <div class="text-center" data-bind="visible: showEmailAlertLink">
+            <a data-toggle="modal" data-target="#email-alert-modal" href="#">
+                <span class="glyph glyph-mail"></span>
+                <span class="type-c2">Create an email alert for this package.</span>
+            </a>
+        </div>
     </div>
     <div class="hidden-xs col-sm-5 col-md-7 col-lg-9">
         <br/>
@@ -38,6 +44,7 @@
         </div>
     </div>
 </div>
+
 @*<div class="row">
     <div class="col-xs-12 col-xs-offset-9">
         <form style="padding: 1em;">
@@ -52,3 +59,52 @@
         </form>
     </div>
 </div>*@
+
+<div class="row">
+    <div class="col-xs-24">
+        <div class="modal" id="email-alert-modal"
+             tabindex="-1" role="dialog"
+             aria-labelledby="modal-sample-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-xs-24">
+                                Get notified when this package becomes .NET Core compatible.
+                                <form data-bind="submit: submitEmailAlert">
+                                    <div class="form-group">
+                                        <label for="searchTerm">
+
+                                        </label>
+                                        <input type="email"
+                                               class="form-control"
+                                               id="email"
+                                               placeholder="Enter your email address."
+                                               data-bind="value: email"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" data-bind="checked: optIn"/>
+                                                <span>Let me know about new features</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <input name="packageId" type="hidden" data-bind="value: searchTerm"/>
+                                    <p data-bind="text: emailError"></p>
+                                    <button type="submit" class="btn btn-primary">
+                                        Submit
+                                    </button>
+                                    <button type="button" class="btn btn-info"
+                                            data-dismiss="modal">
+                                        Cancel
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

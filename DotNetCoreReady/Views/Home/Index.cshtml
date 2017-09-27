@@ -62,6 +62,40 @@
             this.showSearch = ko.computed(() => {
                 return self.isSearching();
             });
+
+            this.email = ko.observable("");
+            this.optIn = ko.observable(true);
+            this.isSubmittingEmail = ko.observable(false);
+            this.emailError = ko.observable("");
+            this.showEmailAlertLink = ko.computed(() => {
+                return self.searchTerm() !== "";
+            })
+            this.submitEmailAlert = () => {
+                self.isSubmittingEmail(true);
+                var data = {
+                    Email: self.email(),
+                    PackageId: self.searchTerm(),
+                    OptedInToMarketing: self.optIn()
+                }
+
+                $.post("/Email/",
+                    data,
+                    (result, status) => {
+                        self.emailError("");
+                        self.isSubmittingEmail(false);
+                        if (result.Error) {
+                            self.emailError(result.Error);
+                        } else {
+                            $('#email-alert-modal').modal('hide');
+                            $("#email-alert-msg").removeAttr("hidden");
+                            $("#email-alert-msg").show();
+                            setTimeout(() => {
+                                $("#email-alert-msg").hide();
+                            }, 3000);
+                        }
+                    });
+            }
+            this.showEmailSuccessMessage = ko.observable(true);
         }
 
         function NugetModel(onResults) {
