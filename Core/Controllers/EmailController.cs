@@ -12,13 +12,10 @@ namespace DotNetCoreReady.Controllers
         private readonly IEmailAlertsRepository _emailAlertsRepository;
         private readonly NugetClient _nugetClient;
 
-        public EmailController()
+        public EmailController(IEmailAlertsRepository emailAlertsRepository)
         {
-            var connectionString = "";
-            var tableName = "emailalerts";
-
             _nugetClient = new NugetClient();
-            _emailAlertsRepository = new TableStorageEmailAlertsRepository(connectionString, tableName);
+            _emailAlertsRepository = emailAlertsRepository ?? throw new System.ArgumentNullException(nameof(emailAlertsRepository));
         }
 
         [HttpPost]

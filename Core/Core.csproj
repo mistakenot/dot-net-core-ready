@@ -6,7 +6,9 @@
 
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="2.6.362" />
+    <PackageReference Include="Dapper" Version="1.50.4" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
+    <PackageReference Include="Npgsql" Version="3.2.6" />
     <PackageReference Include="NuGet.Client" Version="4.2.0" />
     <PackageReference Include="NuGet.Protocol.Core.v3" Version="4.3.0-beta1-2418" />
     <PackageReference Include="Octokit" Version="0.28.0" />
