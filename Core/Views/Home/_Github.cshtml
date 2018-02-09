@@ -14,12 +14,12 @@
         <td>
             <h6>
                 <span class="type-sh2">
-                    <a data-bind="text: Title, attr: {href: Url}"></a>
+                    <a data-bind="text: title, attr: {href: url}"></a>
                 </span>
-                <span class="label label-warning" data-bind="visible: IsOpen">Open</span>
-                <span class="label label-primary" data-bind="visible: !IsOpen">Closed</span>
+                <span class="label label-warning" data-bind="visible: isOpen">Open</span>
+                <span class="label label-primary" data-bind="visible: !isOpen">Closed</span>
             </h6>
-            <p data-bind="text: Body" style="text-overflow: ellipsis"></p>
+            <p data-bind="text: body" style="text-overflow: ellipsis"></p>
         </td>
     </tr>
     </tbody>
