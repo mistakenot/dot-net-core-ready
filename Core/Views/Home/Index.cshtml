@@ -1,0 +1,266 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+    var defaultId = ViewBag.DefaultId ?? "";
+}
+
+<section data-bind="with: search">
+    @Html.Partial("_Search")
+</section>
+
+<section data-bind="visible: !search.isEmpty()">
+    
+    <div class="row">
+        <div class="col-md-12" data-bind="with: nuget">
+            @Html.Partial("_Status")
+        </div>
+
+        <div class="col-md-12" data-bind="with: alternatives">
+            @Html.Partial("_Alternatives")
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-24" data-bind="with: github">
+            @Html.Partial("_Github")
+        </div>
+    </div>
+
+</section>
+
+<section data-bind="visible: search.isEmpty()">
+    <br/>
+    <div class="row text-center">
+        <div class="hidden-xs">
+            <div class="col-sm-8">
+                <p class="type-p1">Search for package status.</p>
+            </div>
+            <div class="col-sm-8">
+                <p class="type-p1">See compatible alternatives.</p>
+            </div>
+            <div class="col-sm-8">
+                <p class="type-p1">Find relevant Github issues.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section scripts{
+    <script>
+        function SearchModel(onSubmit) {
+            var self = this;
+            this.searchTerm = ko.observable('@defaultId');
+            this.isSearching = ko.observable(false);
+            this.submitSearch = function() {
+                if (self.searchTerm() !== "") {
+                    onSubmit(self.searchTerm());
+                }
+                self.isSearching(false);
+            }
+            this.isEmpty = ko.computed(() => {
+                return self.searchTerm() === "";
+            });
+            this.showSearch = ko.computed(() => {
+                return self.isSearching();
+            });
+
+            this.email = ko.observable("");
+            this.optIn = ko.observable(true);
+            this.isSubmittingEmail = ko.observable(false);
+            this.emailError = ko.observable("");
+            this.showEmailAlertLink = ko.computed(() => {
+                return self.searchTerm() !== "";
+            })
+            this.submitEmailAlert = () => {
+                self.isSubmittingEmail(true);
+                var data = {
+                    Email: self.email(),
+                    PackageId: self.searchTerm(),
+                    OptedInToMarketing: self.optIn()
+                }
+
+                $.post("/Email/",
+                    data,
+                    (result, status) => {
+                        self.emailError("");
+                        self.isSubmittingEmail(false);
+                        if (result.Error) {
+                            self.emailError(result.Error);
+                        } else {
+                            $('#email-alert-modal').modal('hide');
+                            $("#email-alert-msg").removeAttr("hidden");
+                            $("#email-alert-msg").show();
+                            setTimeout(() => {
+                                $("#email-alert-msg").hide();
+                            }, 3000);
+                        }
+                    });
+            }
+            this.showEmailSuccessMessage = ko.observable(true);
+        }
+
+        function NugetModel(onResults) {
+            var self = this;
+            this.isLoading = ko.observable(false);
+            this.version = ko.observable("");
+            this.id = ko.observable("");
+            this.frameworks = ko.observableArray([]);
+            this.activeSearch = null;
+            this.isDirty = ko.observable(false);
+            this.load = function(id) {
+                var url = '@(Url.Action("Frameworks", "Nuget"))';
+                self.isLoading(true);
+                self.frameworks([]);
+                self.activeSearch = $.getJSON(
+                        url,
+                        { id },
+                        (data) => {
+                            self.cancel();
+                            var versions = data
+                                .map(d => new NugetVersionModel(d.PackageVersion, d.NetStandardVersions));
+                            self.frameworks(versions);
+                            if (onResults) {
+                                onResults(versions);
+                            }
+                            self.isVisible(true);
+                        })
+                    .fail(() => {
+                        self.cancel();
+                    });
+            }
+            this.cancel = function() {
+                if (self.activeSearch) {
+                    self.activeSearch.abort();
+                }
+                self.isLoading(false);
+            }
+            this.isVisible = () => {
+                return !self.isDirty() && !self.isLoading();
+            }
+            this.isEmpty = ko.computed(() => {
+                return self.frameworks().length === 0;
+            });
+        }
+
+        function NugetVersionModel(version, netStandardVersions) {
+            this.packageVersion = version;
+            this.netStandardVersions = netStandardVersions.join(', ');
+            this.supportsNetCore = netStandardVersions.length > 0;
+        }
+
+        function GithubModel() {
+            var self = this;
+            this.isLoading = ko.observable(false);
+            this.issues = ko.observableArray([]);
+            this.activeSearch = undefined;
+            var url = '@Url.Action("Search", "Github")';
+
+            this.load = (packageId) => {
+                self.isLoading(true);
+                self.issues([]);
+                self.activeSearch = $.getJSON(
+                        url,
+                        { packageId: packageId },
+                        (data) => {
+                            self.issues(data);
+                            self.cancel();
+                        })
+                    .fail(() => {
+                        self.cancel();
+                    });
+            }
+
+            this.cancel = () => {
+                if (self.activeSearch) {
+                    self.activeSearch.abort();
+                }
+                self.isLoading(false);
+            }
+
+            this.showResults = () => {
+                return !self.isLoading();
+            }
+        }
+
+        function AlternativesModel() {
+            var self = this;
+            this.isLoading = ko.observable(false);
+            this.items = ko.observableArray([]);
+            this.activeSearch = undefined;
+            var url = '@Url.Action("Alternatives", "Nuget")';
+
+            this.load = (id, version) => {
+                self.items([]);
+                self.isLoading(true);
+                self.activeSearch = $.getJSON(
+                        url,
+                        { id, version },
+                        (data) => {
+                            self.items(data);
+                            this.cancel();
+                        })
+                    .fail(() => {
+                        self.cancel();
+                    });;
+            }
+
+            this.cancel = () => {
+                if (self.activeSearch) {
+                    self.activeSearch.abort();
+                }
+                self.isLoading(false);
+            }
+
+            this.isVisible = () => {
+                return !self.isLoading();
+            }
+        }
+
+        function Model() {
+            var self = this;
+            this.search = new SearchModel(s => {
+                self.nuget.load(s);
+                self.github.load(s);
+                self.alternatives.load(s);
+            });
+            this.nuget = new NugetModel();
+            this.github = new GithubModel();
+            this.alternatives = new AlternativesModel();
+        }
+
+        var model = new Model();
+
+        ko.applyBindings(model);
+
+        // instantiate the bloodhound suggestion engine
+        var numbers = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.whitespace,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: '@Url.Action("Autocomplete", "Nuget")',
+                prepare: (query, settings) => {
+                    model.search.isSearching(true);
+                    settings.data = { searchTerm: query }
+                    return settings;
+                },
+                transform: (response) => {
+                    model.search.isSearching(false);
+                    return response;
+                }
+            }
+        });
+
+        // initialize the bloodhound suggestion engine
+        numbers.initialize();
+
+        $('#searchTerm').typeahead({
+            items: 4,
+            source: numbers.ttAdapter(),
+            afterSelect: (item) => {
+                model.search.submitSearch();
+            }
+        });
+
+        // This will fire in case of a default id provided
+        model.search.submitSearch();
+    </script>
+}

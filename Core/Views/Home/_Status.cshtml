@@ -1,0 +1,29 @@
+﻿<h4>Status</h4>
+<div class="glyphicon-align-center">
+    <loading-spinner params="show: isLoading"></loading-spinner>
+</div>
+<table data-bind="visible: isVisible()" class="table">
+    <thead>
+    <tr>
+        <th>Package Version</th>
+        <th>.NET Core Ready</th>
+        <th>.NET Standard Versions</th>
+    </tr>
+    </thead>
+    <tbody data-bind="foreach: frameworks">
+    <tr data-bind="css: {success: supportsNetCore, danger: !supportsNetCore}">
+        <td>
+            <span data-bind="text: packageVersion"></span>
+        </td>
+        <td>
+            <span class="glyph glyph-checkmark"
+                  data-bind="visible: supportsNetCore"
+                  aria-hidden="true"></span>
+            <span class="glyph glyph-cancel"
+                  data-bind="visible: !supportsNetCore"
+                  aria-hidden="true"></span>
+        </td>
+        <td data-bind="text: netStandardVersions"></td>
+    </tr>
+    </tbody>
+</table>

@@ -1,0 +1,22 @@
+﻿<h4>Alternatives</h4>
+<div class="glyphicon-align-center">
+    <div data-bind="component: {name: 'loading-spinner', params: {show: isLoading}}"></div>
+</div>
+<table class="table table-striped" data-bind="visible: isVisible()">
+    <thead>
+    <tr>
+        <th>Package Name</th>
+        <th class="text-right">Package Version</th>
+    </tr>
+    </thead>
+    <tbody data-bind="foreach: items">
+    <tr>
+        <td>
+            <a data-bind="text: Id, attr: {href: ProjectUrl}"></a>
+        </td>
+        <td class="text-right">
+            <p data-bind="text: Version"></p>
+        </td>
+    </tr>
+    </tbody>
+</table>

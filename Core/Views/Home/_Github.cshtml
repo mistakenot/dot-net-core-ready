@@ -1,0 +1,26 @@
+﻿<h4>Open Github Issues</h4>
+<div class="glyphicon-align-center">
+    <loading-spinner params="show: isLoading"></loading-spinner>
+</div>
+
+<table class="table table-striped" data-bind="visible: showResults()">
+    <thead>
+    <tr>
+        <th>Github Issues</th>
+    </tr>
+    </thead>
+    <tbody data-bind="foreach: issues">
+    <tr>
+        <td>
+            <h6>
+                <span class="type-sh2">
+                    <a data-bind="text: Title, attr: {href: Url}"></a>
+                </span>
+                <span class="label label-warning" data-bind="visible: IsOpen">Open</span>
+                <span class="label label-primary" data-bind="visible: !IsOpen">Closed</span>
+            </h6>
+            <p data-bind="text: Body" style="text-overflow: ellipsis"></p>
+        </td>
+    </tr>
+    </tbody>
+</table>
