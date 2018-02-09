@@ -41,7 +41,7 @@ namespace DotNetCoreReady.Controllers
 
         [HttpGet]
         // [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "id")]
-        [ResponseCacheAttribute(VaryByQueryKeys=new[] {"id"})]
+        [ResponseCacheAttribute(VaryByQueryKeys=new[] {"id"}, Duration=3600)]
         public async Task<JsonResult> Frameworks(string id)
         {
             var versions = await _client.FindLatestVersions(id);
@@ -64,7 +64,7 @@ namespace DotNetCoreReady.Controllers
 
         [HttpGet]
         // [OutputCache(Location = OutputCacheLocation.Server, Duration = 36000, VaryByParam = "packageId;version")]
-        [ResponseCacheAttribute(VaryByQueryKeys=new[] {"packageId", "version"})]
+        [ResponseCacheAttribute(VaryByQueryKeys=new[] {"packageId", "version"}, Duration=3600)]
         public async Task<JsonResult> Dependencies(
             string packageId,
             string version = null)

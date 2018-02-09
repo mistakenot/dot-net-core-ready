@@ -23,7 +23,7 @@ namespace DotNetCoreReady.Controllers
         }
 
         [HttpGet]
-        [ResponseCacheAttribute(VaryByQueryKeys=new[] {"packageId"})]
+        [ResponseCacheAttribute(VaryByQueryKeys=new[] {"packageId"}, Duration=3600)]
         public async Task<ActionResult> Search(string packageId)
         {
             var githubUrls = await _nugetClient.GetGithubUrls(packageId);

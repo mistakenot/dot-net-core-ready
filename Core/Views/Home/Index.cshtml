@@ -116,7 +116,7 @@
                         (data) => {
                             self.cancel();
                             var versions = data
-                                .map(d => new NugetVersionModel(d.PackageVersion, d.NetStandardVersions));
+                                .map(d => new NugetVersionModel(d.packageVersion, d.netStandardVersions));
                             self.frameworks(versions);
                             if (onResults) {
                                 onResults(versions);
