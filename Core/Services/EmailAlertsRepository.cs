@@ -8,14 +8,13 @@ namespace DotNetCoreReady.Services
     public interface IEmailAlertsRepository
     {
         Task<CreateResult> CreateIfNotExists(string email, string packageId, bool optedInToMarketing);
-
     }
 
-    public class EmailAlertsRepository : IEmailAlertsRepository
+    public class TableStorageEmailAlertsRepository : IEmailAlertsRepository
     {
         private readonly CloudTable _table;
 
-        public EmailAlertsRepository(string connectionString, string tableName)
+        public TableStorageEmailAlertsRepository(string connectionString, string tableName)
         {
             var storageAccount = CloudStorageAccount.Parse(connectionString);
             var tableClient = storageAccount.CreateCloudTableClient();

@@ -18,7 +18,7 @@ namespace DotNetCoreReady.Controllers
             var tableName = "emailalerts";
 
             _nugetClient = new NugetClient();
-            _emailAlertsRepository = new EmailAlertsRepository(connectionString, tableName);
+            _emailAlertsRepository = new TableStorageEmailAlertsRepository(connectionString, tableName);
         }
 
         [HttpPost]
